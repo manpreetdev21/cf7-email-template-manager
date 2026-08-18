@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name:       CF7 Email Template Manager
- * Plugin URI:        https://example.com/cf7-email-template-manager
+ * Plugin URI:        https://github.com/manpreetdev21/cf7-email-template-manager
  * Description:       Reusable, brandable email templates for Contact Form 7. Design once, assign to any form — without ever overwriting Contact Form 7's own mail settings.
  * Version:           1.0.0
  * Author:            Manpreet Singh
  * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * License URI:       https://github.com/manpreetdev21/
  * Text Domain:       cf7-email-template-manager
  * Domain Path:       /languages
  * Requires at least: 6.4
