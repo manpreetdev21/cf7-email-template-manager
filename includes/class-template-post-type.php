@@ -29,6 +29,7 @@ class CF7ETM_Template_Post_Type {
 			'_cf7etm_recipient'     => 'sanitize_text_field',
 			'_cf7etm_sender'        => 'sanitize_text_field',
 			'_cf7etm_headers'       => array( __CLASS__, 'sanitize_headers' ),
+			'_cf7etm_attachments'   => array( __CLASS__, 'sanitize_attachments' ),
 			'_cf7etm_exclude_blank' => 'absint',
 			'_cf7etm_category'      => 'sanitize_text_field',
 			'_cf7etm_form_context'  => 'absint',
@@ -90,6 +91,37 @@ class CF7ETM_Template_Post_Type {
 			$line = sanitize_text_field( $line );
 
 			if ( '' !== trim( $line ) && preg_match( '/^[A-Za-z0-9-]+:\s*.+$/', $line ) ) {
+				$clean[] = $line;
+			}
+		}
+
+		return implode( "\n", $clean );
+	}
+
+	/**
+	 * Keeps only mail-tag references, one per line.
+	 *
+	 * This value becomes Contact Form 7's `attachments` mail property, where a
+	 * line reading [your-file] attaches whatever was uploaded to that field.
+	 * CF7 also treats a bare line as a file path under wp-content; we do not
+	 * expose that, so an administrator can never name an arbitrary path here.
+	 *
+	 * @param string $value Raw attachment lines.
+	 * @return string
+	 */
+	public static function sanitize_attachments( $value ) {
+		$lines = preg_split( '/\r\n|\r|\n/', (string) $value );
+		$clean = array();
+
+		foreach ( $lines as $line ) {
+			$line = trim( sanitize_text_field( $line ) );
+
+			if ( ! preg_match( '/^\[([^\]]+)\]$/', $line, $matches ) ) {
+				continue;
+			}
+
+			// Let Contact Form 7 decide what a valid field name looks like.
+			if ( wpcf7_is_name( $matches[1] ) && ! in_array( $line, $clean, true ) ) {
 				$clean[] = $line;
 			}
 		}
@@ -288,6 +320,14 @@ class CF7ETM_Template_Post_Type {
 			update_post_meta( $id, $key, call_user_func( $sanitize, $input[ $field ] ) );
 		}
 
+		/*
+		 * Derived flag, so "does this template attach files?" is a meta lookup
+		 * for the list filters and the dashboard rather than a LIKE scan.
+		 */
+		$spec = trim( (string) get_post_meta( $id, '_cf7etm_attachments', true ) );
+
+		update_post_meta( $id, '_cf7etm_has_files', '' === $spec ? 0 : 1 );
+
 		return $id;
 	}
 
@@ -348,6 +388,26 @@ class CF7ETM_Template_Post_Type {
 				'fields'         => 'ids',
 				'meta_key'       => '_cf7etm_type',
 				'meta_value'     => $type,
+			)
+		);
+
+		return (int) $query->found_posts;
+	}
+
+	/**
+	 * Counts templates that attach uploaded files.
+	 *
+	 * @return int
+	 */
+	public static function count_with_files() {
+		$query = new WP_Query(
+			array(
+				'post_type'      => self::POST_TYPE,
+				'post_status'    => array( 'publish', 'draft', 'private' ),
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_key'       => '_cf7etm_has_files',
+				'meta_value'     => 1,
 			)
 		);
 

@@ -24,10 +24,11 @@ Features:
 * Warnings when a template uses a tag the form does not have — nothing is ever removed for you
 * A notice when a form gains new fields your template is not using yet
 * Separate admin notification and customer confirmation templates
+* Automatic detection of file upload fields, and uploaded files attached to the email
 * Global branding: logo, colours, footer, address and social links across every template
 * Preview with realistic sample data, and test emails
 * Duplicate, search, filter, bulk actions, JSON import and export
-* Eight starter templates
+* Nine starter templates, including one for file uploads
 
 == Installation ==
 

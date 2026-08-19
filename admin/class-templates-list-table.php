@@ -44,6 +44,7 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 			'name'     => __( 'Template Name', 'cf7-email-template-manager' ),
 			'type'     => __( 'Type', 'cf7-email-template-manager' ),
 			'forms'    => __( 'Assigned Forms', 'cf7-email-template-manager' ),
+			'files'    => __( 'File Support', 'cf7-email-template-manager' ),
 			'status'   => __( 'Status', 'cf7-email-template-manager' ),
 			'modified' => __( 'Updated', 'cf7-email-template-manager' ),
 			'author'   => __( 'Author', 'cf7-email-template-manager' ),
@@ -92,6 +93,8 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 			'text'     => __( 'Plain Text', 'cf7-email-template-manager' ),
 			'assigned' => __( 'Assigned', 'cf7-email-template-manager' ),
 			'unused'   => __( 'Unused', 'cf7-email-template-manager' ),
+			'files'    => __( 'Contains File Uploads', 'cf7-email-template-manager' ),
+			'nofiles'  => __( 'No File Uploads', 'cf7-email-template-manager' ),
 		);
 
 		$views = array();
@@ -122,7 +125,7 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filter.
 		$filter = isset( $_GET['filter'] ) ? sanitize_key( wp_unslash( $_GET['filter'] ) ) : 'all';
 
-		$allowed = array( 'all', 'publish', 'private', 'draft', 'html', 'text', 'assigned', 'unused' );
+		$allowed = array( 'all', 'publish', 'private', 'draft', 'html', 'text', 'assigned', 'unused', 'files', 'nofiles' );
 
 		return in_array( $filter, $allowed, true ) ? $filter : 'all';
 	}
@@ -178,6 +181,27 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 					$args['post__not_in'] = $assigned;
 				}
 				break;
+
+			case 'files':
+				$args['meta_key']   = '_cf7etm_has_files';
+				$args['meta_value'] = 1;
+				break;
+
+			case 'nofiles':
+				// Templates saved before the flag existed have no row at all.
+				$args['meta_query'] = array(
+					'relation' => 'OR',
+					array(
+						'key'     => '_cf7etm_has_files',
+						'value'   => 1,
+						'compare' => '!=',
+					),
+					array(
+						'key'     => '_cf7etm_has_files',
+						'compare' => 'NOT EXISTS',
+					),
+				);
+				break;
 		}
 
 		$query = new WP_Query( $args );
@@ -203,7 +227,8 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	private function build_counts( $assigned ) {
-		$counts = CF7ETM_Template_Post_Type::counts();
+		$counts     = CF7ETM_Template_Post_Type::counts();
+		$with_files = CF7ETM_Template_Post_Type::count_with_files();
 
 		return array(
 			'all'      => $counts['total'],
@@ -214,6 +239,8 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 			'text'     => CF7ETM_Template_Post_Type::count_by_type( 'text' ),
 			'assigned' => count( $assigned ),
 			'unused'   => max( 0, $counts['total'] - count( $assigned ) ),
+			'files'    => $with_files,
+			'nofiles'  => max( 0, $counts['total'] - $with_files ),
 		);
 	}
 
@@ -355,6 +382,33 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 		}
 
 		return implode( '<br />', $names );
+	}
+
+	/**
+	 * File support column.
+	 *
+	 * @param WP_Post $item Template post.
+	 * @return string
+	 */
+	public function column_files( $item ) {
+		$spec = trim( (string) get_post_meta( $item->ID, '_cf7etm_attachments', true ) );
+
+		if ( '' === $spec ) {
+			return '<span class="cf7etm-muted">' . esc_html__( 'None', 'cf7-email-template-manager' ) . '</span>';
+		}
+
+		$count = count( explode( "\n", $spec ) );
+
+		return sprintf(
+			'<span class="cf7etm-badge cf7etm-badge--info">%s</span>',
+			esc_html(
+				sprintf(
+					/* translators: %d: number of file upload fields attached */
+					_n( '%d file field', '%d file fields', $count, 'cf7-email-template-manager' ),
+					$count
+				)
+			)
+		);
 	}
 
 	/**

@@ -25,6 +25,7 @@ if ( ! $template ) {
 		'recipient'     => '',
 		'sender'        => '',
 		'headers'       => '',
+		'attachments'   => '',
 		'exclude_blank' => 1,
 		'category'      => '',
 		'form_context'  => 0,
@@ -128,6 +129,12 @@ $status_modifier = match ( $template['status'] ) {
 					<div class="cf7etm-tags__list" data-form-tags>
 						<p class="cf7etm-muted"><?php esc_html_e( 'Select a contact form to see its fields.', 'cf7-email-template-manager' ); ?></p>
 					</div>
+				</div>
+
+				<div class="cf7etm-tags__group" data-file-group hidden>
+					<h3><?php esc_html_e( 'File Uploads', 'cf7-email-template-manager' ); ?></h3>
+					<div class="cf7etm-tags__list" data-file-tags></div>
+					<p class="cf7etm-help"><?php esc_html_e( 'Contact Form 7 replaces a file tag with the uploaded file name.', 'cf7-email-template-manager' ); ?></p>
 				</div>
 
 				<div class="cf7etm-tags__group">
@@ -254,6 +261,14 @@ $status_modifier = match ( $template['status'] ) {
 						<?php esc_html_e( 'Hide empty fields', 'cf7-email-template-manager' ); ?>
 					</label>
 					<span class="cf7etm-help"><?php esc_html_e( 'Removes lines whose tags came back empty.', 'cf7-email-template-manager' ); ?></span>
+				</p>
+
+				<p class="cf7etm-field">
+					<label for="cf7etm-attachments"><?php esc_html_e( 'Attachments', 'cf7-email-template-manager' ); ?></label>
+					<textarea id="cf7etm-attachments" data-field="attachments" rows="3" data-insertable="1"
+						placeholder="[your-resume]"><?php echo esc_textarea( $template['attachments'] ); ?></textarea>
+					<span class="cf7etm-help"><?php esc_html_e( 'One file tag per line. Whatever the visitor uploaded to that field is attached to this email. Leave empty to keep the form’s own attachment settings.', 'cf7-email-template-manager' ); ?></span>
+					<span class="cf7etm-alert cf7etm-alert--warning" data-attachment-warning hidden></span>
 				</p>
 
 				<hr class="cf7etm-rule" />

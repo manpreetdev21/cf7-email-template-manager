@@ -1,6 +1,6 @@
 <?php
 /**
- * The eight starter templates seeded on first activation.
+ * The nine starter templates seeded on first activation.
  *
  * Every HTML starter is a complete <html> document on purpose: CF7's
  * WPCF7_Mail::htmlize() only skips its own wrapper when the body already
@@ -226,6 +226,30 @@ function cf7etm_starter_templates() {
 				'<p ' . $paragraph . '>' . __( 'Hello [your-name],', 'cf7-email-template-manager' ) . '</p>'
 				. '<p ' . $paragraph . '>' . __( 'Thanks for subscribing to updates from [cf7etm_company_name]. We will send you news now and then — never spam.', 'cf7-email-template-manager' ) . '</p>'
 				. $button( __( 'Visit our website', 'cf7-email-template-manager' ), '[cf7etm_website]' )
+			),
+		),
+
+		array(
+			'name'         => __( 'File Upload Notification', 'cf7-email-template-manager' ),
+			'type'         => 'html',
+			'category'     => __( 'Admin', 'cf7-email-template-manager' ),
+			'subject'      => __( 'New file from [your-name]', 'cf7-email-template-manager' ),
+			'preview_text' => __( 'A new submission arrived with an attachment.', 'cf7-email-template-manager' ),
+			'description'  => __( 'Admin notification for forms with an upload field. Change [your-file] to match your own field name.', 'cf7-email-template-manager' ),
+			'headers'      => 'Reply-To: [your-email]',
+			'attachments'  => '[your-file]',
+			'body'         => cf7etm_html_shell(
+				__( 'New File Submission', 'cf7-email-template-manager' ),
+				'<p ' . $paragraph . '>' . __( 'Someone submitted a file through [cf7etm_company_name].', 'cf7-email-template-manager' ) . '</p>'
+				. cf7etm_html_rows(
+					array(
+						__( 'Name', 'cf7-email-template-manager' )          => '[your-name]',
+						__( 'Email', 'cf7-email-template-manager' )         => '<a href="mailto:[your-email]" style="color:[cf7etm_primary_color];">[your-email]</a>',
+						__( 'Message', 'cf7-email-template-manager' )       => '[your-message]',
+						__( 'Uploaded file', 'cf7-email-template-manager' ) => '[your-file]',
+					)
+				)
+				. '<p style="margin:20px 0 0;font-size:12px;color:#646970;">' . __( 'The file is attached to this email. If nothing is attached, the visitor did not upload one.', 'cf7-email-template-manager' ) . '</p>'
 			),
 		),
 

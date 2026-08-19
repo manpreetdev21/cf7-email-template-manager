@@ -46,6 +46,7 @@ class CF7ETM_Admin {
 			'cf7etm'                => array( __( 'Dashboard', 'cf7-email-template-manager' ), 'render_dashboard' ),
 			'cf7etm-templates'      => array( __( 'Email Templates', 'cf7-email-template-manager' ), 'render_templates' ),
 			'cf7etm-template-edit'  => array( __( 'Add New', 'cf7-email-template-manager' ), 'render_editor' ),
+			'cf7etm-contact-forms'  => array( __( 'Contact Forms', 'cf7-email-template-manager' ), 'render_contact_forms' ),
 			'cf7etm-assignments'    => array( __( 'Assignments', 'cf7-email-template-manager' ), 'render_assignments' ),
 			'cf7etm-branding'       => array( __( 'Global Branding', 'cf7-email-template-manager' ), 'render_branding' ),
 			'cf7etm-settings'       => array( __( 'Settings', 'cf7-email-template-manager' ), 'render_settings' ),
@@ -147,6 +148,8 @@ class CF7ETM_Admin {
 					'keep'         => __( 'Keep', 'cf7-email-template-manager' ),
 					'replaceWith'  => __( 'Replace with…', 'cf7-email-template-manager' ),
 					'noTags'       => __( 'This form has no fields that can be used in an email.', 'cf7-email-template-manager' ),
+					/* translators: %s: comma-separated list of mail tags */
+					'badAttach'    => __( 'Not a file upload field on the selected form: %s. Nothing will be attached.', 'cf7-email-template-manager' ),
 					'newTagsOne'   => __( '1 form tag is available but not used in this template.', 'cf7-email-template-manager' ),
 					/* translators: %d: number of unused form tags */
 					'newTagsMany'  => __( '%d form tags are available but not used in this template.', 'cf7-email-template-manager' ),
@@ -230,6 +233,11 @@ class CF7ETM_Admin {
 	/** Template editor screen. */
 	public static function render_editor() {
 		self::view( 'editor' );
+	}
+
+	/** Contact forms overview screen. */
+	public static function render_contact_forms() {
+		self::view( 'contact-forms' );
 	}
 
 	/** Assignments screen. */

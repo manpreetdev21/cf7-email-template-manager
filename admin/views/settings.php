@@ -60,6 +60,22 @@ $settings = CF7ETM_Plugin::settings();
 			</div>
 
 			<div class="cf7etm-card">
+				<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Files', 'cf7-email-template-manager' ); ?></h2></div>
+
+				<p class="cf7etm-help">
+					<?php esc_html_e( 'Attachments are chosen per template, in the template editor. List one file tag per line and Contact Form 7 attaches whatever the visitor uploaded to that field.', 'cf7-email-template-manager' ); ?>
+				</p>
+
+				<p class="cf7etm-help">
+					<?php esc_html_e( 'File size limits, allowed file types and validation stay with Contact Form 7 and WordPress. There is nothing to configure here, and nothing here can loosen those limits.', 'cf7-email-template-manager' ); ?>
+				</p>
+
+				<p class="cf7etm-help">
+					<?php esc_html_e( 'This plugin never stores, copies or serves an uploaded file, and never puts a file path or a download link in an email. Contact Form 7 removes uploaded files shortly after sending, so the attachment is the copy that lasts.', 'cf7-email-template-manager' ); ?>
+				</p>
+			</div>
+
+			<div class="cf7etm-card">
 				<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Advanced', 'cf7-email-template-manager' ); ?></h2></div>
 
 				<p class="cf7etm-field cf7etm-field--check">

@@ -115,6 +115,21 @@ $slots = array(
 													<?php esc_html_e( 'Edit template', 'cf7-email-template-manager' ); ?>
 												</a>
 											</p>
+											<?php
+											$assigned_template = CF7ETM_Template_Post_Type::get( $assigned );
+
+											// Mailing the visitor's own upload back to them is
+											// occasionally wanted and often a mistake. Warn, never block.
+											if (
+												'customer' === $slot
+												&& $assigned_template
+												&& '' !== trim( (string) $assigned_template['attachments'] )
+											) :
+												?>
+												<p class="cf7etm-alert cf7etm-alert--warning">
+													<?php esc_html_e( 'This template attaches the visitor’s uploaded files, and this email goes to the visitor.', 'cf7-email-template-manager' ); ?>
+												</p>
+											<?php endif; ?>
 										<?php elseif ( 'customer' === $slot ) : ?>
 											<p class="cf7etm-help"><?php esc_html_e( 'Optional. Sends a confirmation to the visitor.', 'cf7-email-template-manager' ); ?></p>
 										<?php endif; ?>

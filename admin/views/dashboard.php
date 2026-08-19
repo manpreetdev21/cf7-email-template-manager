@@ -69,6 +69,14 @@ $cards = array(
 		'link'  => CF7ETM_Plugin::url( 'templates', array( 'filter' => 'text' ) ),
 		'cta'   => __( 'View plain text', 'cf7-email-template-manager' ),
 	),
+	array(
+		'icon'  => 'dashicons-paperclip',
+		'count' => CF7ETM_Template_Post_Type::count_with_files(),
+		'label' => __( 'File Upload Templates', 'cf7-email-template-manager' ),
+		'desc'  => __( 'Templates that attach uploaded files.', 'cf7-email-template-manager' ),
+		'link'  => CF7ETM_Plugin::url( 'templates', array( 'filter' => 'files' ) ),
+		'cta'   => __( 'View file templates', 'cf7-email-template-manager' ),
+	),
 );
 ?>
 <div class="wrap cf7etm">

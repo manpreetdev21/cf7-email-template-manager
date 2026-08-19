@@ -60,7 +60,7 @@ $form = WPCF7_ContactForm::get_template( array( 'title' => 'CF7ETM Smoke Form' )
 
 $form->set_properties(
 	array(
-		'form' => "[text* your-name]\n[email* your-email]\n[tel your-phone]\n[textarea your-message]",
+		'form' => "[text* your-name]\n[email* your-email]\n[tel your-phone]\n[textarea your-message]\n[file* your-resume]\n[file docs]",
 		'mail' => array(
 			'subject'            => 'ORIGINAL SUBJECT',
 			'sender'             => 'Original <original@example.com>',
@@ -87,6 +87,11 @@ $template_id = CF7ETM_Template_Post_Type::save(
 		'preview_text'  => 'Someone contacted you',
 		'body'          => '<!doctype html><html><body><table><tr><td>Hello [your-name] at [cf7etm_company_name], reply to [your-email]. [company]</td></tr></table></body></html>',
 		'headers'       => 'Reply-To: [your-email]',
+		'attachments'   => "[your-resume]
+../../wp-config.php
+[9bad]
+[docs]
+[your-resume]",
 		'exclude_blank' => 1,
 	)
 );
@@ -103,6 +108,24 @@ cf7etm_check( 'Doctype survives sanitising', str_starts_with( strtolower( ltrim(
 cf7etm_check( 'Email-safe HTML survives sanitising', str_contains( $stored['body'], '<table>' ) );
 cf7etm_check( 'CF7 tags are preserved verbatim', str_contains( $stored['body'], '[your-name]' ) );
 
+cf7etm_check(
+	'Attachment spec keeps file tags and drops the rest',
+	"[your-resume]\n[docs]" === $stored['attachments'],
+	str_replace( "\n", ' | ', $stored['attachments'] )
+);
+
+cf7etm_check(
+	'Attachment spec never accepts a bare file path',
+	! str_contains( $stored['attachments'], 'wp-config' ),
+	$stored['attachments']
+);
+
+cf7etm_check(
+	'File flag derived from the attachment spec',
+	1 === (int) get_post_meta( $template_id, '_cf7etm_has_files', true )
+		&& CF7ETM_Template_Post_Type::count_with_files() > 0
+);
+
 $xss = CF7ETM_Template_Post_Type::sanitize_body( '<p onclick="evil()">hi</p><script>alert(1)</script><iframe src="x"></iframe>', 'html' );
 
 cf7etm_check( 'Scripts stripped from bodies', ! str_contains( $xss, '<script' ) && ! str_contains( $xss, '<iframe' ) && ! str_contains( $xss, 'onclick' ), $xss );
@@ -117,6 +140,35 @@ cf7etm_check(
 	'CF7 mail-tags detected',
 	array_diff( array( 'your-name', 'your-email', 'your-phone', 'your-message' ), $mail_tags ) === array(),
 	implode( ', ', $mail_tags )
+);
+
+$file_types = CF7ETM_CF7_Bridge::file_tag_types();
+
+cf7etm_check(
+	'File tag types come from CF7 own feature flag',
+	array_diff( array( 'file', 'file*' ), $file_types ) === array(),
+	implode( ', ', $file_types )
+);
+
+$file_fields = CF7ETM_CF7_Bridge::file_fields( $form_id );
+
+cf7etm_check(
+	'File upload fields detected',
+	array_diff( array( 'your-resume', 'docs' ), $file_fields ) === array() && 2 === count( $file_fields ),
+	implode( ', ', $file_fields )
+);
+
+cf7etm_check(
+	'Ordinary fields are not flagged as uploads',
+	! array_intersect( array( 'your-name', 'your-email', 'your-message' ), $file_fields )
+);
+
+$bad_attach = CF7ETM_CF7_Bridge::invalid_attachments( "[your-resume]\n[your-message]", $form_id );
+
+cf7etm_check(
+	'Attachment naming a non-file field is flagged',
+	array( 'your-message' ) === $bad_attach,
+	implode( ', ', $bad_attach )
 );
 
 $unknown = CF7ETM_CF7_Bridge::unknown_tags( $stored['body'], $form_id );
@@ -161,6 +213,30 @@ cf7etm_check( 'HTML mode enabled for HTML templates', 1 === (int) $mail['use_htm
 cf7etm_check( 'Exclude-blank carried across', 1 === (int) $mail['exclude_blank'] );
 cf7etm_check( 'Recipient falls back to the form when the template is silent', 'original-recipient@example.com' === $mail['recipient'], $mail['recipient'] );
 cf7etm_check( 'Template headers applied', str_contains( $mail['additional_headers'], 'Reply-To' ) );
+
+cf7etm_check(
+	'Attachment spec reaches CF7 mail property',
+	str_contains( $mail['attachments'], '[your-resume]' )
+		&& str_contains( $mail['attachments'], '[docs]' ),
+	$mail['attachments']
+);
+
+/* An empty spec must leave whatever Contact Form 7 already had. */
+update_post_meta( $template_id, '_cf7etm_attachments', '' );
+
+$fallback = CF7ETM_Renderer::to_mail_array(
+	$template_id,
+	array( 'attachments' => '[form-own-file]' ),
+	'admin'
+);
+
+cf7etm_check(
+	'Empty attachment spec falls back to the form own value',
+	'[form-own-file]' === $fallback['attachments'],
+	$fallback['attachments']
+);
+
+update_post_meta( $template_id, '_cf7etm_attachments', "[your-resume]\n[docs]" );
 
 cf7etm_check(
 	'CF7 database row is untouched',
@@ -215,6 +291,7 @@ $copy    = CF7ETM_Template_Post_Type::get( $copy_id );
 
 cf7etm_check( 'Duplicate copies the body', $copy && $copy['body'] === $stored['body'] );
 cf7etm_check( 'Duplicate lands as a draft', $copy && 'draft' === $copy['status'] );
+cf7etm_check( 'Duplicate copies the attachment spec', $copy && $copy['attachments'] === $stored['attachments'] );
 
 cf7etm_check( 'Assigned template is reported as in use', count( CF7ETM_CF7_Bridge::forms_using( $template_id ) ) === 1 );
 

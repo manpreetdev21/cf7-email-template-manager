@@ -25,11 +25,14 @@
 	const formSelect = root.querySelector( '[data-field="form_context"]' );
 	const tagSearch = root.querySelector( '#cf7etm-tag-search' );
 	const formTagList = root.querySelector( '[data-form-tags]' );
+	const fileTagList = root.querySelector( '[data-file-tags]' );
+	const fileGroup = root.querySelector( '[data-file-group]' );
 	const unknownBox = root.querySelector( '[data-unknown-tags]' );
 	const unknownList = root.querySelector( '[data-unknown-list]' );
 	const newBox = root.querySelector( '[data-new-tags]' );
 	const newList = root.querySelector( '[data-new-tags-list]' );
 	const newMessage = root.querySelector( '[data-new-tags-message]' );
+	const attachmentBox = root.querySelector( '[data-attachment-warning]' );
 
 	let templateId = parseInt( root.dataset.templateId, 10 ) || 0;
 	let editor = null;
@@ -199,14 +202,15 @@
 	/**
 	 * Builds a tag chip element.
 	 *
-	 * @param {string} tag   Tag name.
-	 * @param {string} label Friendly label.
+	 * @param {string}  tag    Tag name.
+	 * @param {string}  label  Friendly label.
+	 * @param {boolean} isFile Whether the tag is a file-upload field.
 	 * @return {HTMLElement} The chip.
 	 */
-	function tagChip( tag, label ) {
+	function tagChip( tag, label, isFile ) {
 		const wrapper = document.createElement( 'span' );
 
-		wrapper.className = 'cf7etm-tag';
+		wrapper.className = 'cf7etm-tag' + ( isFile ? ' cf7etm-tag--file' : '' );
 		wrapper.dataset.search = ( label + ' ' + tag ).toLowerCase();
 
 		const insert = document.createElement( 'button' );
@@ -289,6 +293,8 @@
 
 		if ( ! formId || formId === '0' ) {
 			formTagList.innerHTML = '';
+			fileTagList.innerHTML = '';
+			fileGroup.hidden = true;
 			unknownBox.hidden = true;
 			newBox.hidden = true;
 			return;
@@ -299,6 +305,7 @@
 		ui.post( 'form_tags', {
 			form_id: formId,
 			content: template.subject + ' ' + template.body,
+			attachments: template.attachments,
 		} )
 			.then( ( data ) => {
 				availableTags = data.tags || [];
@@ -315,6 +322,12 @@
 	 */
 	function renderFormTags( tags ) {
 		formTagList.innerHTML = '';
+		fileTagList.innerHTML = '';
+
+		const files = tags.filter( ( tag ) => tag.is_file );
+
+		// File uploads get their own group; the section hides when there are none.
+		fileGroup.hidden = files.length === 0;
 
 		if ( ! tags.length ) {
 			const empty = document.createElement( 'p' );
@@ -325,8 +338,8 @@
 		}
 
 		tags.forEach( ( tag ) => {
-			const chip = tagChip( tag.name, tag.label + ( tag.required ? ' *' : '' ) );
-			formTagList.appendChild( chip );
+			const chip = tagChip( tag.name, tag.label + ( tag.required ? ' *' : '' ), tag.is_file );
+			( tag.is_file ? fileTagList : formTagList ).appendChild( chip );
 		} );
 	}
 
@@ -355,8 +368,20 @@
 
 			unused.forEach( ( tag ) => {
 				const detail = availableTags.find( ( item ) => item.name === tag );
-				newList.appendChild( tagChip( tag, detail ? detail.label : tag ) );
+				newList.appendChild( tagChip( tag, detail ? detail.label : tag, detail && detail.is_file ) );
 			} );
+		}
+
+		// Attachment lines that name something CF7 will never attach.
+		const badAttachments = report.attachments || [];
+
+		attachmentBox.hidden = badAttachments.length === 0;
+
+		if ( badAttachments.length ) {
+			attachmentBox.textContent = i18n.badAttach.replace(
+				'%s',
+				badAttachments.map( ( tag ) => '[' + tag + ']' ).join( ', ' )
+			);
 		}
 	}
 
@@ -461,7 +486,7 @@
 		} );
 	}
 
-	root.querySelectorAll( '[data-field="subject"]' ).forEach( ( field ) => {
+	root.querySelectorAll( '[data-field="subject"], [data-field="attachments"]' ).forEach( ( field ) => {
 		field.addEventListener( 'input', scheduleReport );
 	} );
 
@@ -615,4 +640,9 @@
 	}
 
 	refreshTags();
+
+	// The templates list links here with #preview to open the preview straight away.
+	if ( '#preview' === window.location.hash ) {
+		preview();
+	}
 } )();

@@ -60,7 +60,7 @@ $has_any = CF7ETM_Template_Post_Type::counts()['total'] > 0;
 
 			<form method="post">
 				<?php
-				wp_nonce_field( 'bulk-cf7etm_templates' );
+				// WP_List_Table::display() emits the bulk-action nonce itself.
 				$table->display();
 				?>
 			</form>

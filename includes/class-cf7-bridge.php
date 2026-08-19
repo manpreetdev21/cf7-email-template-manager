@@ -385,6 +385,7 @@ class CF7ETM_CF7_Bridge {
 				'name'     => $tag->name,
 				'label'    => self::friendly_label( $tag->name ),
 				'type'     => $tag->basetype,
+				'is_file'  => in_array( $tag->type, self::file_tag_types(), true ),
 				'required' => (bool) $tag->is_required(),
 				'values'   => array_values( (array) $tag->values ),
 			);
@@ -397,6 +398,7 @@ class CF7ETM_CF7_Bridge {
 					'name'     => $name,
 					'label'    => self::friendly_label( $name ),
 					'type'     => 'text',
+					'is_file'  => false,
 					'required' => false,
 					'values'   => array(),
 				);
@@ -404,6 +406,44 @@ class CF7ETM_CF7_Bridge {
 		}
 
 		return array_values( $details );
+	}
+
+	/**
+	 * Form-tag types that produce an uploaded file.
+	 *
+	 * Asks Contact Form 7 which types declare its own `file-uploading`
+	 * feature rather than hard-coding 'file', so upload fields added by
+	 * add-ons are detected too. Returns both the plain and required forms,
+	 * e.g. 'file' and 'file*'.
+	 *
+	 * @return array List of tag type names.
+	 */
+	public static function file_tag_types() {
+		static $types = null;
+
+		if ( null === $types ) {
+			$types = WPCF7_FormTagsManager::get_instance()->collect_tag_types( 'file-uploading' );
+		}
+
+		return $types;
+	}
+
+	/**
+	 * File-upload field names on a form.
+	 *
+	 * @param int $form_id CF7 form ID.
+	 * @return array List of field names, without brackets.
+	 */
+	public static function file_fields( $form_id ) {
+		$names = array();
+
+		foreach ( self::form_tags( $form_id ) as $tag ) {
+			if ( ! empty( $tag['is_file'] ) ) {
+				$names[] = $tag['name'];
+			}
+		}
+
+		return $names;
 	}
 
 	/**
@@ -486,6 +526,33 @@ class CF7ETM_CF7_Bridge {
 		}
 
 		return $unknown;
+	}
+
+	/**
+	 * Attachment lines that do not name a file-upload field on the form.
+	 *
+	 * CF7 silently attaches nothing when the name is not an upload field, so
+	 * this is the difference between a broken template and a visible warning.
+	 *
+	 * @param string $spec    Attachment lines.
+	 * @param int    $form_id CF7 form ID.
+	 * @return array Tag names that will not attach anything.
+	 */
+	public static function invalid_attachments( $spec, $form_id ) {
+		if ( ! preg_match_all( '/\[([^\]]+)\]/', (string) $spec, $matches ) ) {
+			return array();
+		}
+
+		$files = self::file_fields( $form_id );
+		$bad   = array();
+
+		foreach ( array_unique( $matches[1] ) as $tag ) {
+			if ( ! in_array( $tag, $files, true ) ) {
+				$bad[] = $tag;
+			}
+		}
+
+		return $bad;
 	}
 
 	/**

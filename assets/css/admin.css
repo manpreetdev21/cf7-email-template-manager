@@ -800,6 +800,22 @@
 	border-color: var(--cf7etm-warning);
 }
 
+/* File-upload fields: accent bar + paperclip, so they read as a distinct
+   group without relying on colour alone. */
+.cf7etm-tag--file {
+	border-left: 3px solid var(--cf7etm-primary);
+}
+
+.cf7etm-tag--file .cf7etm-tag__label::before {
+	content: "\f546";
+	font-family: dashicons;
+	font-size: 14px;
+	line-height: 1;
+	vertical-align: -2px;
+	margin-right: 4px;
+	color: var(--cf7etm-primary);
+}
+
 .cf7etm-compose .cf7etm-panel__body {
 	display: flex;
 	flex-direction: column;

@@ -68,6 +68,16 @@ class CF7ETM_Renderer {
 			$sender = sprintf( '%s <%s>', get_bloginfo( 'name' ), self::default_from_address() );
 		}
 
+		/*
+		 * Raw and unbranded on purpose: WPCF7_Mail::attachments() reads this
+		 * property without tag replacement and matches [field] literally.
+		 */
+		$attachments = trim( (string) $template['attachments'] );
+
+		if ( '' === $attachments ) {
+			$attachments = (string) ( $existing['attachments'] ?? '' );
+		}
+
 		$headers = trim( (string) $template['headers'] );
 
 		if ( '' === $headers ) {
@@ -80,8 +90,8 @@ class CF7ETM_Renderer {
 			'recipient'          => $recipient,
 			'body'               => $body,
 			'additional_headers' => $headers,
-			// Attachments stay Contact Form 7's business; we never touch them.
-			'attachments'        => (string) ( $existing['attachments'] ?? '' ),
+			// Contact Form 7 still owns the files themselves; we only name fields.
+			'attachments'        => $attachments,
 			'use_html'           => $is_html ? 1 : 0,
 			'exclude_blank'      => (int) $template['exclude_blank'],
 			// The customer email is CF7's mail_2, which is off unless enabled.

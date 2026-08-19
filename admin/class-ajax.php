@@ -79,6 +79,7 @@ class CF7ETM_Ajax {
 			'recipient'     => (string) ( $raw['recipient'] ?? '' ),
 			'sender'        => (string) ( $raw['sender'] ?? '' ),
 			'headers'       => (string) ( $raw['headers'] ?? '' ),
+			'attachments'   => (string) ( $raw['attachments'] ?? '' ),
 			'category'      => (string) ( $raw['category'] ?? '' ),
 			'exclude_blank' => empty( $raw['exclude_blank'] ) ? 0 : 1,
 			'form_context'  => absint( $raw['form_context'] ?? 0 ),
@@ -127,7 +128,7 @@ class CF7ETM_Ajax {
 				'status'   => $saved['status'],
 				'label'    => CF7ETM_Template_Post_Type::status_label( $saved['status'] ),
 				'editUrl'  => CF7ETM_Plugin::url( 'template-edit', array( 'template' => $id ) ),
-				'warnings' => self::tag_report( $input['subject'] . ' ' . $input['body'], $input['form_context'] ),
+				'warnings' => self::tag_report( $input['subject'] . ' ' . $input['body'], $input['form_context'], $input['attachments'] ),
 			)
 		);
 	}
@@ -268,10 +269,13 @@ class CF7ETM_Ajax {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified in dispatch(); used only for tag matching.
 		$content = (string) wp_unslash( $_POST['content'] ?? '' );
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified in dispatch(); used only for tag matching.
+		$attachments = (string) wp_unslash( $_POST['attachments'] ?? '' );
+
 		wp_send_json_success(
 			array(
 				'tags'    => CF7ETM_CF7_Bridge::form_tags( $form_id ),
-				'report'  => self::tag_report( $content, $form_id ),
+				'report'  => self::tag_report( $content, $form_id, $attachments ),
 			)
 		);
 	}
@@ -279,21 +283,24 @@ class CF7ETM_Ajax {
 	/**
 	 * Unknown and unused tags for a body of text.
 	 *
-	 * @param string $content Subject and body.
-	 * @param int    $form_id CF7 form ID.
+	 * @param string $content     Subject and body.
+	 * @param int    $form_id     CF7 form ID.
+	 * @param string $attachments Attachment lines.
 	 * @return array
 	 */
-	private static function tag_report( $content, $form_id ) {
+	private static function tag_report( $content, $form_id, $attachments = '' ) {
 		if ( ! $form_id ) {
 			return array(
-				'unknown' => array(),
-				'unused'  => array(),
+				'unknown'     => array(),
+				'unused'      => array(),
+				'attachments' => array(),
 			);
 		}
 
 		return array(
-			'unknown' => CF7ETM_CF7_Bridge::unknown_tags( $content, $form_id ),
-			'unused'  => CF7ETM_CF7_Bridge::unused_tags( $content, $form_id ),
+			'unknown'     => CF7ETM_CF7_Bridge::unknown_tags( $content, $form_id ),
+			'unused'      => CF7ETM_CF7_Bridge::unused_tags( $content, $form_id ),
+			'attachments' => CF7ETM_CF7_Bridge::invalid_attachments( $attachments, $form_id ),
 		);
 	}
 }
