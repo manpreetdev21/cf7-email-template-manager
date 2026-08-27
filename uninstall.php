@@ -32,3 +32,6 @@ foreach ( $cf7etm_templates as $cf7etm_id ) {
 foreach ( array( 'cf7etm_settings', 'cf7etm_branding', 'cf7etm_assignments', 'cf7etm_log', 'cf7etm_seeded' ) as $cf7etm_option ) {
 	delete_option( $cf7etm_option );
 }
+
+// Per-user screen option for the templates list.
+delete_metadata( 'user', 0, 'cf7etm_per_page', '', true );

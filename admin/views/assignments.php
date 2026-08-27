@@ -11,6 +11,33 @@ $forms       = CF7ETM_CF7_Bridge::forms();
 $assignments = CF7ETM_CF7_Bridge::assignments();
 $options     = CF7ETM_Template_Post_Type::options( true );
 
+// An assigned template that was later deactivated must still appear here, or
+// the row shows "No template" while the form is still marked as managed.
+foreach ( CF7ETM_CF7_Bridge::assigned_template_ids() as $assigned_id ) {
+	if ( isset( $options[ $assigned_id ] ) ) {
+		continue;
+	}
+
+	$stale = CF7ETM_Template_Post_Type::get( $assigned_id );
+
+	if ( $stale ) {
+		$options[ $assigned_id ] = sprintf(
+			/* translators: 1: template name, 2: status label, e.g. Inactive */
+			__( '%1$s (%2$s)', 'cf7-email-template-manager' ),
+			$stale['name'],
+			CF7ETM_Template_Post_Type::status_label( $stale['status'] )
+		);
+	}
+}
+
+// The templates list links here with ?template=N to assign that template.
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only preselection.
+$preselect = isset( $_GET['template'] ) ? absint( $_GET['template'] ) : 0;
+
+if ( $preselect && ! isset( $options[ $preselect ] ) ) {
+	$preselect = 0;
+}
+
 $slots = array(
 	'admin'    => __( 'Admin Email Template', 'cf7-email-template-manager' ),
 	'customer' => __( 'Customer Email Template', 'cf7-email-template-manager' ),
@@ -26,6 +53,18 @@ $slots = array(
 	<div class="cf7etm-alert cf7etm-alert--info">
 		<?php esc_html_e( 'Assigning a template does not change your Contact Form 7 mail settings. They stay exactly as they are and take over again the moment you detach.', 'cf7-email-template-manager' ); ?>
 	</div>
+
+	<?php if ( $preselect ) : ?>
+		<div class="cf7etm-alert cf7etm-alert--info">
+			<?php
+			printf(
+				/* translators: %s: template name */
+				esc_html__( '%s is pre-selected below. Pick the form and email it should handle, then press Apply Template.', 'cf7-email-template-manager' ),
+				'<strong>' . esc_html( $options[ $preselect ] ) . '</strong>'
+			);
+			?>
+		</div>
+	<?php endif; ?>
 
 	<?php if ( ! $forms ) : ?>
 
@@ -93,8 +132,17 @@ $slots = array(
 										</label>
 										<select id="cf7etm-select-<?php echo esc_attr( $form_id . '-' . $slot ); ?>" data-template-select>
 											<option value="0"><?php esc_html_e( '— No template —', 'cf7-email-template-manager' ); ?></option>
-											<?php foreach ( $options as $id => $name ) : ?>
-												<option value="<?php echo esc_attr( (string) $id ); ?>" <?php selected( $assigned, $id ); ?>>
+											<?php
+											// An empty admin slot takes the preselection from ?template=N.
+											$chosen = $assigned;
+
+											if ( ! $chosen && $preselect && 'admin' === $slot ) {
+												$chosen = $preselect;
+											}
+
+											foreach ( $options as $id => $name ) :
+												?>
+												<option value="<?php echo esc_attr( (string) $id ); ?>" <?php selected( $chosen, $id ); ?>>
 													<?php echo esc_html( $name ); ?>
 												</option>
 											<?php endforeach; ?>
@@ -117,6 +165,22 @@ $slots = array(
 											</p>
 											<?php
 											$assigned_template = CF7ETM_Template_Post_Type::get( $assigned );
+
+											// Only active templates take over a live form, so an
+											// inactive one here means Contact Form 7 is still sending.
+											if ( $assigned_template && 'publish' !== $assigned_template['status'] ) :
+												?>
+												<p class="cf7etm-alert cf7etm-alert--warning">
+													<?php
+													printf(
+														/* translators: %s: status label, e.g. Draft */
+														esc_html__( 'This template is %s, so Contact Form 7 is still sending this email. Set it to Active to use it.', 'cf7-email-template-manager' ),
+														esc_html( CF7ETM_Template_Post_Type::status_label( $assigned_template['status'] ) )
+													);
+													?>
+												</p>
+												<?php
+											endif;
 
 											// Mailing the visitor's own upload back to them is
 											// occasionally wanted and often a mistake. Warn, never block.

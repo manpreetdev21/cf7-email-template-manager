@@ -312,6 +312,35 @@ wp_delete_post( $copy_id, true );
 cf7etm_check( 'Deleting a template prunes its assignments', array() === CF7ETM_CF7_Bridge::for_form( $form_id ) );
 
 /* -------------------------------------------------------------------------
+ * Screen option and branding round-trip
+ * ---------------------------------------------------------------------- */
+
+cf7etm_check(
+	'Templates-per-page screen option is saved',
+	35 === apply_filters( 'set_screen_option_cf7etm_per_page', false, 'cf7etm_per_page', '35' )
+);
+
+cf7etm_check(
+	'Absurd per-page values are clamped',
+	200 === apply_filters( 'set_screen_option_cf7etm_per_page', false, 'cf7etm_per_page', '99999' )
+);
+
+$branding_before = CF7ETM_Branding::get();
+
+CF7ETM_Branding::save( array_merge( $branding_before, array( 'company_name' => 'Imported Co', 'primary_color' => '#abcdef' ) ) );
+
+$branding_after = CF7ETM_Branding::get();
+
+cf7etm_check( 'Branding import restores text values', 'Imported Co' === $branding_after['company_name'] );
+cf7etm_check( 'Branding import restores colours', '#abcdef' === $branding_after['primary_color'] );
+
+CF7ETM_Branding::save( array_merge( $branding_before, array( 'primary_color' => 'not-a-colour' ) ) );
+
+cf7etm_check( 'Invalid colour falls back to the default', '#2271b1' === CF7ETM_Branding::get()['primary_color'] );
+
+CF7ETM_Branding::save( $branding_before );
+
+/* -------------------------------------------------------------------------
  * Clean up
  * ---------------------------------------------------------------------- */
 

@@ -1102,3 +1102,26 @@
 		max-width: none;
 	}
 }
+
+.cf7etm-color {
+	display: flex;
+	gap: var(--cf7etm-space-2);
+	align-items: center;
+}
+
+.cf7etm-color input[type="color"] {
+	flex: 0 0 auto;
+	width: 44px;
+	height: 34px;
+	padding: 2px;
+	border: 1px solid var(--cf7etm-border);
+	border-radius: var(--cf7etm-radius);
+	background: #fff;
+	cursor: pointer;
+}
+
+.cf7etm-color__hex {
+	width: 110px;
+	font-family: monospace;
+	text-transform: lowercase;
+}

@@ -73,19 +73,26 @@ $branding = CF7ETM_Branding::get();
 			<div class="cf7etm-card">
 				<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Appearance', 'cf7-email-template-manager' ); ?></h2></div>
 
-				<p class="cf7etm-field">
-					<label for="cf7etm-primary-color"><?php esc_html_e( 'Primary Colour', 'cf7-email-template-manager' ); ?></label>
-					<input type="text" id="cf7etm-primary-color" name="branding[primary_color]" class="cf7etm-color"
-						value="<?php echo esc_attr( $branding['primary_color'] ); ?>" data-default-color="#2271b1" />
-					<span class="cf7etm-help"><code>[cf7etm_primary_color]</code></span>
-				</p>
+				<?php
+				$colors = array(
+					'primary_color'   => __( 'Primary Colour', 'cf7-email-template-manager' ),
+					'secondary_color' => __( 'Secondary Colour', 'cf7-email-template-manager' ),
+				);
 
-				<p class="cf7etm-field">
-					<label for="cf7etm-secondary-color"><?php esc_html_e( 'Secondary Colour', 'cf7-email-template-manager' ); ?></label>
-					<input type="text" id="cf7etm-secondary-color" name="branding[secondary_color]" class="cf7etm-color"
-						value="<?php echo esc_attr( $branding['secondary_color'] ); ?>" data-default-color="#1d2327" />
-					<span class="cf7etm-help"><code>[cf7etm_secondary_color]</code></span>
-				</p>
+				foreach ( $colors as $key => $label ) :
+					$id = 'cf7etm-' . str_replace( '_', '-', $key );
+					?>
+					<p class="cf7etm-field">
+						<label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label>
+						<span class="cf7etm-color">
+							<input type="color" id="<?php echo esc_attr( $id ); ?>" name="branding[<?php echo esc_attr( $key ); ?>]"
+								value="<?php echo esc_attr( $branding[ $key ] ); ?>" data-color-input />
+							<input type="text" class="cf7etm-color__hex" aria-label="<?php echo esc_attr( $label ); ?>"
+								value="<?php echo esc_attr( $branding[ $key ] ); ?>" maxlength="7" data-color-hex />
+						</span>
+						<span class="cf7etm-help"><code>[cf7etm_<?php echo esc_attr( $key ); ?>]</code></span>
+					</p>
+				<?php endforeach; ?>
 
 				<p class="cf7etm-field">
 					<label for="cf7etm-footer-text"><?php esc_html_e( 'Footer Text', 'cf7-email-template-manager' ); ?></label>

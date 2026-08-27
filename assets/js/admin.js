@@ -388,9 +388,26 @@
 		} );
 	}
 
-	if ( window.jQuery && document.querySelector( '.cf7etm-color' ) ) {
-		window.jQuery( '.cf7etm-color' ).wpColorPicker();
-	}
+	document.querySelectorAll( '.cf7etm-color' ).forEach( ( wrap ) => {
+		const picker = wrap.querySelector( '[data-color-input]' );
+		const hex = wrap.querySelector( '[data-color-hex]' );
+
+		picker.addEventListener( 'input', () => {
+			hex.value = picker.value;
+		} );
+
+		hex.addEventListener( 'input', () => {
+			// Only push valid hex through; the picker rejects anything else.
+			if ( /^#[0-9a-f]{6}$/i.test( hex.value ) ) {
+				picker.value = hex.value;
+			}
+		} );
+
+		// Snap the text back to whatever the picker actually holds.
+		hex.addEventListener( 'blur', () => {
+			hex.value = picker.value;
+		} );
+	} );
 
 	/* ------------------------------------------------------------------ */
 	/* Export                                                              */

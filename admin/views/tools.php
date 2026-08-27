@@ -51,6 +51,13 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 					<label for="cf7etm-import-file"><?php esc_html_e( 'Template file (.json)', 'cf7-email-template-manager' ); ?></label>
 					<input type="file" id="cf7etm-import-file" name="import_file" accept="application/json,.json" required />
 				</p>
+				<p class="cf7etm-field cf7etm-field--check">
+					<label for="cf7etm-import-branding">
+						<input type="checkbox" id="cf7etm-import-branding" name="import_branding" value="1" />
+						<?php esc_html_e( 'Also restore global branding from the file', 'cf7-email-template-manager' ); ?>
+					</label>
+					<span class="cf7etm-help"><?php esc_html_e( 'Overwrites your current logo, colours, footer and social links. Off by default.', 'cf7-email-template-manager' ); ?></span>
+				</p>
 				<button type="submit" class="cf7etm-btn">
 					<span class="dashicons dashicons-upload" aria-hidden="true"></span>
 					<?php esc_html_e( 'Import templates', 'cf7-email-template-manager' ); ?>

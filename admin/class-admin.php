@@ -24,6 +24,16 @@ class CF7ETM_Admin {
 		add_action( 'admin_post_cf7etm_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'admin_post_cf7etm_import', array( __CLASS__, 'handle_import' ) );
 		add_action( 'admin_post_cf7etm_clear_log', array( __CLASS__, 'handle_clear_log' ) );
+
+		// Without this, core discards the "Templates per page" screen option.
+		add_filter(
+			'set_screen_option_cf7etm_per_page',
+			static function ( $status, $option, $value ) {
+				return max( 1, min( 200, absint( $value ) ) );
+			},
+			10,
+			3
+		);
 	}
 
 	/**
@@ -112,10 +122,19 @@ class CF7ETM_Admin {
 			CF7ETM_VERSION
 		);
 
+		$deps = array();
+
+		if ( self::$hooks['cf7etm-branding'] === $hook ) {
+			// wp.media has to be loaded before admin.js runs, or the
+			// "Choose image" button binds nothing.
+			wp_enqueue_media();
+			$deps[] = 'media-editor';
+		}
+
 		wp_enqueue_script(
 			'cf7etm-admin',
 			CF7ETM_URL . 'assets/js/admin.js',
-			array(),
+			$deps,
 			CF7ETM_VERSION,
 			true
 		);
@@ -186,12 +205,6 @@ class CF7ETM_Admin {
 					'codeEditor' => $settings ? $settings : false,
 				)
 			);
-		}
-
-		if ( self::$hooks['cf7etm-branding'] === $hook ) {
-			wp_enqueue_style( 'wp-color-picker' );
-			wp_enqueue_script( 'wp-color-picker' );
-			wp_enqueue_media();
 		}
 	}
 
@@ -411,6 +424,12 @@ class CF7ETM_Admin {
 
 		if ( ! is_array( $data ) || 'cf7etm' !== ( $data['format'] ?? '' ) || empty( $data['templates'] ) || ! is_array( $data['templates'] ) ) {
 			self::redirect( 'tools', 'import_failed' );
+		}
+
+		// Branding is exported too, but it is global: only restore on request.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in self::verify() above.
+		if ( ! empty( $_POST['import_branding'] ) && ! empty( $data['branding'] ) && is_array( $data['branding'] ) ) {
+			CF7ETM_Branding::save( $data['branding'] );
 		}
 
 		$imported = 0;
