@@ -34,11 +34,13 @@ class CF7ETM_Plugin {
 		require_once CF7ETM_DIR . 'includes/class-branding.php';
 		require_once CF7ETM_DIR . 'includes/class-renderer.php';
 		require_once CF7ETM_DIR . 'includes/class-cf7-bridge.php';
+		require_once CF7ETM_DIR . 'includes/class-submissions.php';
 
 		// Post types belong on `init`: $wp_rewrite does not exist yet on plugins_loaded.
 		add_action( 'init', array( 'CF7ETM_Template_Post_Type', 'init' ) );
 
 		CF7ETM_CF7_Bridge::init();
+		CF7ETM_Submissions::init();
 
 		if ( is_admin() ) {
 			require_once CF7ETM_DIR . 'admin/class-admin.php';
@@ -59,6 +61,9 @@ class CF7ETM_Plugin {
 
 		require_once CF7ETM_DIR . 'includes/class-template-post-type.php';
 		CF7ETM_Template_Post_Type::init();
+
+		require_once CF7ETM_DIR . 'includes/class-submissions.php';
+		CF7ETM_Submissions::install();
 
 		add_option( self::SETTINGS, self::default_settings() );
 

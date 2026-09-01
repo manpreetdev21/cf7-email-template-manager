@@ -189,7 +189,44 @@ $status_modifier = match ( $template['status'] ) {
 					<span class="cf7etm-help"><?php esc_html_e( 'The short line inboxes show next to the subject. Optional.', 'cf7-email-template-manager' ); ?></span>
 				</p>
 
-				<div class="cf7etm-field cf7etm-field--grow">
+				<div class="cf7etm-modes" data-modes>
+					<button type="button" class="cf7etm-mode is-active" data-mode="visual" aria-pressed="true">
+						<span class="dashicons dashicons-layout" aria-hidden="true"></span>
+						<?php esc_html_e( 'Visual Builder', 'cf7-email-template-manager' ); ?>
+					</button>
+					<button type="button" class="cf7etm-mode" data-mode="html" aria-pressed="false">
+						<span class="dashicons dashicons-editor-code" aria-hidden="true"></span>
+						<?php esc_html_e( 'HTML', 'cf7-email-template-manager' ); ?>
+					</button>
+				</div>
+
+				<div class="cf7etm-builder" data-builder hidden>
+					<div class="cf7etm-builder__palette" data-block-palette>
+						<?php foreach ( CF7ETM_Admin::block_types() as $block_type => $block ) : ?>
+							<button type="button" class="cf7etm-blockbtn" data-add-block="<?php echo esc_attr( $block_type ); ?>">
+								<span class="dashicons dashicons-<?php echo esc_attr( $block['icon'] ); ?>" aria-hidden="true"></span>
+								<?php echo esc_html( $block['label'] ); ?>
+							</button>
+						<?php endforeach; ?>
+					</div>
+
+					<div class="cf7etm-builder__main">
+						<div class="cf7etm-alert cf7etm-alert--info" data-blocks-import hidden>
+							<p><?php esc_html_e( 'This template is hand-written HTML. Converting rebuilds it as blocks from the content it can recognise — check the preview afterwards, and nothing is saved until you press Save.', 'cf7-email-template-manager' ); ?></p>
+							<button type="button" class="cf7etm-btn cf7etm-btn--small" data-action="convert-blocks">
+								<?php esc_html_e( 'Convert to blocks', 'cf7-email-template-manager' ); ?>
+							</button>
+						</div>
+
+						<div class="cf7etm-builder__canvas" data-blocks-canvas></div>
+
+						<p class="cf7etm-builder__empty" data-blocks-empty>
+							<?php esc_html_e( 'Drag a block from the left, or click one to add it.', 'cf7-email-template-manager' ); ?>
+						</p>
+					</div>
+				</div>
+
+				<div class="cf7etm-field cf7etm-field--grow" data-html-editor hidden>
 					<label for="cf7etm-body"><?php esc_html_e( 'Email Body', 'cf7-email-template-manager' ); ?></label>
 					<textarea id="cf7etm-body" data-field="body" data-insertable="1" rows="24"
 						spellcheck="false"><?php echo esc_textarea( $template['body'] ); ?></textarea>

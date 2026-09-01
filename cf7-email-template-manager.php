@@ -3,7 +3,7 @@
  * Plugin Name:       CF7 Email Template Manager
  * Plugin URI:        https://github.com/manpreetdev21/cf7-email-template-manager
  * Description:       Reusable, brandable email templates for Contact Form 7. Design once, assign to any form — without ever overwriting Contact Form 7's own mail settings.
- * Version:           1.0.0
+ * Version:           1.2.0
  * Author:            Manpreet Singh
  * Author URI:        https://github.com/manpreetdev21/
  * License:           GPL-2.0-or-later
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CF7ETM_VERSION', '1.0.0' );
+define( 'CF7ETM_VERSION', '1.2.0' );
 define( 'CF7ETM_FILE', __FILE__ );
 define( 'CF7ETM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CF7ETM_URL', plugin_dir_url( __FILE__ ) );

@@ -138,12 +138,14 @@ class CF7ETM_Template_Post_Type {
 	 */
 	public static function email_kses() {
 		$global = array(
-			'style' => true,
-			'class' => true,
-			'id'    => true,
-			'align' => true,
-			'dir'   => true,
-			'lang'  => true,
+			// The visual builder marks each block with data-cf7etm-block.
+			'data-*' => true,
+			'style'  => true,
+			'class'  => true,
+			'id'     => true,
+			'align'  => true,
+			'dir'    => true,
+			'lang'   => true,
 		);
 
 		$cell = array_merge(

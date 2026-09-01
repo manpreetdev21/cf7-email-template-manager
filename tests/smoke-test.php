@@ -130,6 +130,19 @@ $xss = CF7ETM_Template_Post_Type::sanitize_body( '<p onclick="evil()">hi</p><scr
 
 cf7etm_check( 'Scripts stripped from bodies', ! str_contains( $xss, '<script' ) && ! str_contains( $xss, '<iframe' ) && ! str_contains( $xss, 'onclick' ), $xss );
 
+// The visual builder stores what it needs in data attributes, so kses has to
+// let them through or every saved layout comes back unreadable.
+$blocks = CF7ETM_Template_Post_Type::sanitize_body(
+	'<table><tr><td data-cf7etm-block="text" data-align="center" style="padding:8px;">hi</td></tr></table>',
+	'html'
+);
+
+cf7etm_check(
+	'Builder block markers survive sanitising',
+	str_contains( $blocks, 'data-cf7etm-block="text"' ) && str_contains( $blocks, 'data-align="center"' ),
+	$blocks
+);
+
 /* -------------------------------------------------------------------------
  * Tag detection and validation
  * ---------------------------------------------------------------------- */
@@ -339,6 +352,223 @@ CF7ETM_Branding::save( array_merge( $branding_before, array( 'primary_color' => 
 cf7etm_check( 'Invalid colour falls back to the default', '#2271b1' === CF7ETM_Branding::get()['primary_color'] );
 
 CF7ETM_Branding::save( $branding_before );
+
+/* -------------------------------------------------------------------------
+ * Submissions log
+ * ---------------------------------------------------------------------- */
+
+CF7ETM_Submissions::install();
+
+global $wpdb;
+
+cf7etm_check(
+	'Submissions table exists',
+	CF7ETM_Submissions::table() === $wpdb->get_var(
+		$wpdb->prepare( 'SHOW TABLES LIKE %s', CF7ETM_Submissions::table() )
+	)
+);
+
+$entry_before = CF7ETM_Submissions::count();
+
+$wpdb->insert(
+	CF7ETM_Submissions::table(),
+	array(
+		'form_id'      => $form_id,
+		'form_title'   => 'CF7ETM Smoke Form',
+		'status'       => 'sent',
+		'fields'       => wp_json_encode(
+			array(
+				'your-name'    => 'John Smith',
+				'your-message' => "Line one\nLine two",
+				'gone-field'   => array( 'a', 'b' ),
+			)
+		),
+		'files'        => wp_json_encode( array( 'your-file' => array( 'cv.pdf' ) ) ),
+		'remote_ip'    => '203.0.113.42',
+		'submitted_at' => current_time( 'mysql' ),
+	)
+);
+
+$entry_id = (int) $wpdb->insert_id;
+$stored   = CF7ETM_Submissions::get( $entry_id );
+
+cf7etm_check( 'Submission stored and read back', $stored && 'John Smith' === $stored['fields']['your-name'], wp_json_encode( $stored ) );
+cf7etm_check( 'Multi-value answers survive the round trip', $stored && array( 'a', 'b' ) === $stored['fields']['gone-field'] );
+cf7etm_check( 'Uploaded file names are kept', $stored && array( 'cv.pdf' ) === $stored['files']['your-file'] );
+
+$listed = CF7ETM_Submissions::query( array( 'form_id' => $form_id ) );
+
+cf7etm_check( 'Submission listed for its form', 1 === $listed['total'] );
+
+cf7etm_check(
+	'Search matches stored answers',
+	1 === CF7ETM_Submissions::query( array( 'search' => 'John Smith' ) )['total']
+);
+
+cf7etm_check(
+	'Search ignores answers that are not there',
+	0 === CF7ETM_Submissions::query( array( 'search' => 'nobody-by-that-name' ) )['total']
+);
+
+$columns = CF7ETM_Submissions::field_columns( $form_id, $listed['items'] );
+
+cf7etm_check(
+	'Columns cover the form fields and any extras in the data',
+	isset( $columns['your-name'], $columns['your-message'], $columns['gone-field'] ),
+	implode( ', ', array_keys( $columns ) )
+);
+
+cf7etm_check( 'Forms with submissions are listed', isset( CF7ETM_Submissions::forms()[ $form_id ] ) );
+
+CF7ETM_Submissions::delete( array( $entry_id ) );
+
+cf7etm_check(
+	'Submission deleted',
+	null === CF7ETM_Submissions::get( $entry_id ) && $entry_before === CF7ETM_Submissions::count()
+);
+
+/*
+ * The capture hook itself, driven through Contact Form 7's own submit() so
+ * the test exercises the real path. wp_mail is short-circuited: this checks
+ * that a submission is logged, not that the server can send email.
+ *
+ * Its own form, because the fixture above requires a file upload that a
+ * command-line submission cannot provide.
+ */
+$live = WPCF7_ContactForm::get_template( array( 'title' => 'CF7ETM Capture Form' ) );
+
+$live->set_properties(
+	array( 'form' => "[text* your-name]\n[email* your-email]\n[textarea your-message]" )
+);
+
+$live_id = $live->save();
+
+// A command-line post has no browser fingerprint, which CF7 reads as spam.
+add_filter( 'wpcf7_skip_spam_check', '__return_true' );
+add_filter( 'pre_wp_mail', '__return_true' );
+
+$_POST = array(
+	'_wpcf7'          => $live_id,
+	'_wpcf7_version'  => WPCF7_VERSION,
+	'_wpcf7_locale'   => 'en_US',
+	'_wpcf7_unit_tag' => 'wpcf7-f' . $live_id . '-o1',
+	'your-name'       => 'Jane Tester',
+	'your-email'      => 'jane@example.com',
+	'your-message'    => "First line\nSecond line",
+);
+
+$submit_result = WPCF7_ContactForm::get_instance( $live_id )->submit();
+
+$_POST = array();
+
+remove_filter( 'pre_wp_mail', '__return_true' );
+remove_filter( 'wpcf7_skip_spam_check', '__return_true' );
+
+$captured = CF7ETM_Submissions::query( array( 'form_id' => $live_id ) );
+$logged   = $captured['items'][0] ?? null;
+
+cf7etm_check(
+	'A real submission is captured',
+	1 === $captured['total'],
+	'CF7 returned: ' . wp_json_encode( $submit_result )
+);
+
+cf7etm_check(
+	'Captured answers match what was posted',
+	$logged && 'Jane Tester' === ( $logged['fields']['your-name'] ?? '' )
+		&& "First line\nSecond line" === ( $logged['fields']['your-message'] ?? '' ),
+	wp_json_encode( $logged['fields'] ?? array() )
+);
+
+cf7etm_check( 'The email result is recorded', $logged && 'sent' === $logged['status'] );
+
+cf7etm_check(
+	'Contact Form 7 internals are not stored as answers',
+	$logged && ! array_filter( array_keys( $logged['fields'] ), static fn( $key ) => str_starts_with( $key, '_' ) ),
+	implode( ', ', array_keys( $logged['fields'] ?? array() ) )
+);
+
+CF7ETM_Submissions::delete( array( $logged['id'] ?? 0 ) );
+wp_delete_post( $live_id, true );
+
+/*
+ * Uploaded files: Contact Form 7 deletes its own copy when the request ends,
+ * so the copy that matters is ours.
+ */
+$source_dir  = wp_upload_dir()['basedir'] . '/cf7etm-test-source';
+$source_file = $source_dir . '/notes.txt';
+$blocked     = $source_dir . '/payload.php';
+
+wp_mkdir_p( $source_dir );
+file_put_contents( $source_file, 'attached file body' );
+file_put_contents( $blocked, '<?php // should never be stored' );
+
+$stored = CF7ETM_Submissions::store_files(
+	array(
+		'your-doc'  => array( $source_file ),
+		'your-code' => array( $blocked ),
+	)
+);
+
+$kept_path = CF7ETM_Submissions::file_path( $stored['your-doc'][0]['path'] ?? '' );
+
+cf7etm_check( 'Uploaded file is copied somewhere permanent', '' !== $kept_path, wp_json_encode( $stored ) );
+
+cf7etm_check(
+	'The stored copy holds the original bytes',
+	$kept_path && 'attached file body' === file_get_contents( $kept_path )
+);
+
+cf7etm_check(
+	'The original name is kept for display',
+	'notes.txt' === ( $stored['your-doc'][0]['name'] ?? '' )
+);
+
+cf7etm_check(
+	'A file type WordPress will not allow is recorded but never stored',
+	'' === ( $stored['your-code'][0]['path'] ?? 'x' )
+		&& 'type' === ( $stored['your-code'][0]['error'] ?? '' ),
+	wp_json_encode( $stored['your-code'] ?? array() )
+);
+
+cf7etm_check(
+	'The upload folder is closed to the web',
+	file_exists( CF7ETM_Submissions::upload_dir() . '/.htaccess' )
+		&& file_exists( CF7ETM_Submissions::upload_dir() . '/index.html' )
+);
+
+cf7etm_check(
+	'A path climbing out of the upload folder is refused',
+	'' === CF7ETM_Submissions::file_path( '../../../wp-config.php' )
+);
+
+$wpdb->insert(
+	CF7ETM_Submissions::table(),
+	array(
+		'form_id'      => $form_id,
+		'form_title'   => 'CF7ETM Smoke Form',
+		'status'       => 'sent',
+		'fields'       => wp_json_encode( array( 'your-name' => 'Ada Upload' ) ),
+		'files'        => wp_json_encode( $stored ),
+		'remote_ip'    => '203.0.113.7',
+		'submitted_at' => current_time( 'mysql' ),
+	)
+);
+
+$file_entry = CF7ETM_Submissions::get( (int) $wpdb->insert_id );
+$listed_file = CF7ETM_Submissions::files( $file_entry )['your-doc'][0] ?? array();
+
+cf7etm_check(
+	'Stored files read back with a download index',
+	isset( $listed_file['index'] ) && 'notes.txt' === $listed_file['name']
+);
+
+CF7ETM_Submissions::delete( array( $file_entry['id'] ) );
+
+cf7etm_check( 'Deleting a submission removes its files', ! file_exists( $kept_path ) );
+
+wp_delete_file( $source_file );
+wp_delete_file( $blocked );
 
 /* -------------------------------------------------------------------------
  * Clean up

@@ -4,7 +4,7 @@ Tags: contact form 7, email template, html email, cf7, email
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,17 @@ Yes. Contact Form 7 still sends the mail through WordPress, so any SMTP plugin k
 They stay in the database. Data is only removed if you tick "Delete all plugin data" in Settings → Advanced first.
 
 == Changelog ==
+
+= 1.2.0 =
+* New Submissions screen: every accepted Contact Form 7 submission is saved to its own database table, with the email result recorded alongside it.
+* Pick a form to see one column per field; open a submission for the full answers, uploaded files and IP address.
+* Uploaded files are copied out of Contact Form 7 before it deletes them, and downloaded from the submission through a capability-checked link; the store itself is closed to the web.
+* Works with every Contact Form 7 form, including ones added later.
+
+= 1.1.0 =
+* Visual block builder for HTML templates: drag Heading, Text, Form Fields, Button, Image, Divider and Spacer blocks into the email and reorder them.
+* Hand-written templates can be converted to blocks from the Visual tab.
+* The HTML tab is unchanged, so any template can still be edited as source.
 
 = 1.0.0 =
 * Initial release.

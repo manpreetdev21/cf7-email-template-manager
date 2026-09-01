@@ -295,6 +295,25 @@
 				}
 			);
 		}
+
+		// Any link that carries data-cf7etm-confirm asks first, then follows.
+		const guarded = event.target.closest( '[data-cf7etm-confirm]' );
+
+		if ( guarded ) {
+			event.preventDefault();
+
+			confirmAction(
+				{
+					title: i18n.confirm,
+					message: guarded.dataset.cf7etmConfirm,
+					// The link already names the action; reuse it on the button.
+					confirmLabel: guarded.textContent.trim() || i18n.confirm,
+				},
+				() => {
+					window.location.href = guarded.href;
+				}
+			);
+		}
 	} );
 
 	/* ------------------------------------------------------------------ */

@@ -1125,3 +1125,288 @@
 	font-family: monospace;
 	text-transform: lowercase;
 }
+
+/* Visual builder ------------------------------------------------------- */
+
+.cf7etm-modes {
+	display: flex;
+	gap: var(--cf7etm-space-1);
+	margin-bottom: var(--cf7etm-space-3);
+}
+
+.cf7etm-mode {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--cf7etm-space-1);
+	padding: var(--cf7etm-space-2) var(--cf7etm-space-3);
+	border: 1px solid var(--cf7etm-border);
+	border-radius: var(--cf7etm-radius);
+	background: var(--cf7etm-gray-50);
+	color: var(--cf7etm-text-muted);
+	font-size: var(--cf7etm-text-base);
+	font-weight: var(--cf7etm-weight-medium);
+	cursor: pointer;
+}
+
+.cf7etm-mode.is-active {
+	background: var(--cf7etm-primary-light);
+	border-color: var(--cf7etm-primary);
+	color: var(--cf7etm-primary-dark);
+}
+
+.cf7etm-mode .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.cf7etm-builder {
+	display: grid;
+	grid-template-columns: 150px minmax(0, 1fr);
+	gap: var(--cf7etm-space-3);
+	align-items: start;
+}
+
+.cf7etm-builder__palette {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cf7etm-space-1);
+	position: sticky;
+	top: 46px;
+}
+
+.cf7etm-blockbtn {
+	display: flex;
+	align-items: center;
+	gap: var(--cf7etm-space-2);
+	width: 100%;
+	padding: var(--cf7etm-space-2) var(--cf7etm-space-3);
+	border: 1px solid var(--cf7etm-border);
+	border-radius: var(--cf7etm-radius);
+	background: var(--cf7etm-bg);
+	color: var(--cf7etm-text);
+	font-size: var(--cf7etm-text-base);
+	text-align: left;
+	cursor: grab;
+}
+
+.cf7etm-blockbtn:hover {
+	border-color: var(--cf7etm-primary);
+	color: var(--cf7etm-primary-dark);
+}
+
+.cf7etm-blockbtn.ui-draggable-dragging {
+	width: 150px;
+	box-shadow: var(--cf7etm-shadow-md);
+	cursor: grabbing;
+	z-index: 100000;
+}
+
+.cf7etm-blockbtn .dashicons {
+	color: var(--cf7etm-gray-500);
+}
+
+.cf7etm-builder__canvas {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cf7etm-space-2);
+	min-height: 120px;
+}
+
+.cf7etm-builder__empty {
+	margin: 0;
+	padding: var(--cf7etm-space-6);
+	border: 1px dashed var(--cf7etm-gray-300);
+	border-radius: var(--cf7etm-radius-lg);
+	color: var(--cf7etm-text-muted);
+	text-align: center;
+}
+
+.cf7etm-block {
+	border: 1px solid var(--cf7etm-border);
+	border-radius: var(--cf7etm-radius-lg);
+	background: var(--cf7etm-bg);
+}
+
+.cf7etm-block__placeholder {
+	border: 1px dashed var(--cf7etm-primary);
+	border-radius: var(--cf7etm-radius-lg);
+	background: var(--cf7etm-primary-light);
+}
+
+.cf7etm-block__bar {
+	display: flex;
+	align-items: center;
+	gap: var(--cf7etm-space-2);
+	padding: var(--cf7etm-space-2) var(--cf7etm-space-3);
+	border-bottom: 1px solid var(--cf7etm-border);
+	background: var(--cf7etm-gray-50);
+	border-radius: var(--cf7etm-radius-lg) var(--cf7etm-radius-lg) 0 0;
+}
+
+.cf7etm-block__handle {
+	color: var(--cf7etm-gray-500);
+	cursor: grab;
+}
+
+.cf7etm-block__title {
+	font-size: var(--cf7etm-text-sm);
+	font-weight: var(--cf7etm-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--cf7etm-gray-600);
+}
+
+.cf7etm-block__tools {
+	display: flex;
+	gap: var(--cf7etm-space-1);
+	margin-left: auto;
+}
+
+.cf7etm-block__tool {
+	display: inline-flex;
+	padding: 2px;
+	border: 0;
+	background: none;
+	color: var(--cf7etm-gray-500);
+	cursor: pointer;
+}
+
+.cf7etm-block__tool:hover {
+	color: var(--cf7etm-primary);
+}
+
+.cf7etm-block__body {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: var(--cf7etm-space-3);
+	padding: var(--cf7etm-space-3);
+}
+
+.cf7etm-block__field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cf7etm-space-1);
+	min-width: 0;
+}
+
+.cf7etm-block__field--textarea,
+.cf7etm-block__field--rows {
+	grid-column: 1 / -1;
+}
+
+.cf7etm-block__label {
+	font-size: var(--cf7etm-text-xs);
+	font-weight: var(--cf7etm-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--cf7etm-gray-500);
+}
+
+.cf7etm-block__field input,
+.cf7etm-block__field select,
+.cf7etm-block__field textarea {
+	width: 100%;
+	max-width: none;
+}
+
+.cf7etm-block__rows {
+	display: flex;
+	flex-direction: column;
+	gap: var(--cf7etm-space-1);
+}
+
+.cf7etm-block__row {
+	display: grid;
+	grid-template-columns: 1fr 1fr auto;
+	gap: var(--cf7etm-space-1);
+	align-items: center;
+}
+
+.cf7etm-block__rowactions {
+	display: flex;
+	gap: var(--cf7etm-space-2);
+	margin-top: var(--cf7etm-space-1);
+}
+
+@media screen and (max-width: 782px) {
+	.cf7etm-builder {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.cf7etm-builder__palette {
+		position: static;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.cf7etm-blockbtn {
+		width: auto;
+	}
+}
+
+/* A class-level display rule outranks the hidden attribute; restore it. */
+.cf7etm-modes[hidden],
+.cf7etm-builder[hidden],
+.cf7etm-block__field[hidden] {
+	display: none;
+}
+
+/* Submissions ---------------------------------------------------------- */
+
+/* A form with many fields makes a wide table; scroll it, never the page. */
+.cf7etm-list__scroll {
+	overflow-x: auto;
+}
+
+.cf7etm-list__scroll .wp-list-table td {
+	white-space: nowrap;
+}
+
+.cf7etm-entry__pair {
+	margin-right: var(--cf7etm-space-3);
+	white-space: nowrap;
+}
+
+.cf7etm-entry__pair em {
+	color: var(--cf7etm-text-muted);
+	font-style: normal;
+}
+
+.cf7etm-entry {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.cf7etm-entry th,
+.cf7etm-entry td {
+	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
+	border-bottom: 1px solid var(--cf7etm-border);
+	text-align: left;
+	vertical-align: top;
+}
+
+.cf7etm-entry tr:last-child th,
+.cf7etm-entry tr:last-child td {
+	border-bottom: 0;
+}
+
+.cf7etm-entry th {
+	width: 220px;
+	font-weight: var(--cf7etm-weight-semibold);
+	color: var(--cf7etm-text-muted);
+}
+
+.cf7etm-entry th code {
+	display: block;
+	margin-top: 2px;
+	background: none;
+	padding: 0;
+	font-size: var(--cf7etm-text-xs);
+	color: var(--cf7etm-gray-500);
+}
+
+.cf7etm-entry__value {
+	white-space: pre-wrap;
+	word-break: break-word;
+}

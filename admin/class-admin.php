@@ -24,10 +24,20 @@ class CF7ETM_Admin {
 		add_action( 'admin_post_cf7etm_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'admin_post_cf7etm_import', array( __CLASS__, 'handle_import' ) );
 		add_action( 'admin_post_cf7etm_clear_log', array( __CLASS__, 'handle_clear_log' ) );
+		add_action( 'admin_post_cf7etm_download', array( __CLASS__, 'handle_download' ) );
 
 		// Without this, core discards the "Templates per page" screen option.
 		add_filter(
 			'set_screen_option_cf7etm_per_page',
+			static function ( $status, $option, $value ) {
+				return max( 1, min( 200, absint( $value ) ) );
+			},
+			10,
+			3
+		);
+
+		add_filter(
+			'set_screen_option_cf7etm_entries_per_page',
 			static function ( $status, $option, $value ) {
 				return max( 1, min( 200, absint( $value ) ) );
 			},
@@ -61,6 +71,7 @@ class CF7ETM_Admin {
 			'cf7etm-branding'       => array( __( 'Global Branding', 'cf7-email-template-manager' ), 'render_branding' ),
 			'cf7etm-settings'       => array( __( 'Settings', 'cf7-email-template-manager' ), 'render_settings' ),
 			'cf7etm-tools'          => array( __( 'Tools', 'cf7-email-template-manager' ), 'render_tools' ),
+			'cf7etm-submissions'    => array( __( 'Submissions', 'cf7-email-template-manager' ), 'render_submissions' ),
 		);
 
 		foreach ( $submenus as $slug => $config ) {
@@ -79,6 +90,7 @@ class CF7ETM_Admin {
 		}
 
 		add_action( 'load-' . self::$hooks['cf7etm-templates'], array( __CLASS__, 'load_templates_screen' ) );
+		add_action( 'load-' . self::$hooks['cf7etm-submissions'], array( __CLASS__, 'load_submissions_screen' ) );
 	}
 
 	/**
@@ -96,6 +108,46 @@ class CF7ETM_Admin {
 	}
 
 	/**
+	 * Per-page option for the submissions list, plus the single-row delete
+	 * link (a GET action, so it is handled before anything is printed).
+	 */
+	public static function load_submissions_screen() {
+		add_screen_option(
+			'per_page',
+			array(
+				'label'   => __( 'Submissions per page', 'cf7-email-template-manager' ),
+				'default' => 20,
+				'option'  => 'cf7etm_entries_per_page',
+			)
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the nonce is checked below.
+		if ( 'delete' !== ( $_GET['entry_action'] ?? '' ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the nonce is checked below.
+		$id = absint( $_GET['entry'] ?? 0 );
+
+		self::verify( 'cf7etm_delete_entry_' . $id );
+
+		$entry = CF7ETM_Submissions::get( $id );
+
+		CF7ETM_Submissions::delete( array( $id ) );
+
+		wp_safe_redirect(
+			CF7ETM_Plugin::url(
+				'submissions',
+				array(
+					'form'          => $entry ? $entry['form_id'] : 0,
+					'cf7etm_notice' => 'entry_deleted',
+				)
+			)
+		);
+		exit;
+	}
+
+	/**
 	 * Whether the current screen belongs to this plugin.
 	 *
 	 * @param string $hook Current admin page hook.
@@ -103,6 +155,62 @@ class CF7ETM_Admin {
 	 */
 	private static function is_plugin_screen( $hook ) {
 		return in_array( $hook, self::$hooks, true );
+	}
+
+	/**
+	 * The blocks the visual builder offers, in palette order.
+	 *
+	 * @return array Type => label and dashicon.
+	 */
+	public static function block_types() {
+		return array(
+			'heading' => array( 'label' => __( 'Heading', 'cf7-email-template-manager' ), 'icon' => 'heading' ),
+			'text'    => array( 'label' => __( 'Text', 'cf7-email-template-manager' ), 'icon' => 'editor-paragraph' ),
+			'fields'  => array( 'label' => __( 'Form Fields', 'cf7-email-template-manager' ), 'icon' => 'list-view' ),
+			'button'  => array( 'label' => __( 'Button', 'cf7-email-template-manager' ), 'icon' => 'button' ),
+			'image'   => array( 'label' => __( 'Image', 'cf7-email-template-manager' ), 'icon' => 'format-image' ),
+			'divider' => array( 'label' => __( 'Divider', 'cf7-email-template-manager' ), 'icon' => 'minus' ),
+			'spacer'  => array( 'label' => __( 'Spacer', 'cf7-email-template-manager' ), 'icon' => 'editor-expand' ),
+		);
+	}
+
+	/**
+	 * Strings the visual builder needs in the browser.
+	 *
+	 * @return array
+	 */
+	private static function builder_i18n() {
+		return array(
+			'text'          => __( 'Text', 'cf7-email-template-manager' ),
+			'textHelp'      => __( 'Leave a blank line between paragraphs.', 'cf7-email-template-manager' ),
+			'level'         => __( 'Size', 'cf7-email-template-manager' ),
+			'align'         => __( 'Alignment', 'cf7-email-template-manager' ),
+			'left'          => __( 'Left', 'cf7-email-template-manager' ),
+			'center'        => __( 'Centre', 'cf7-email-template-manager' ),
+			'right'         => __( 'Right', 'cf7-email-template-manager' ),
+			'background'    => __( 'Background', 'cf7-email-template-manager' ),
+			'textColour'    => __( 'Text colour', 'cf7-email-template-manager' ),
+			'buttonColour'  => __( 'Button colour', 'cf7-email-template-manager' ),
+			'lineColour'    => __( 'Line colour', 'cf7-email-template-manager' ),
+			'url'           => __( 'Link URL', 'cf7-email-template-manager' ),
+			'imageUrl'      => __( 'Image URL', 'cf7-email-template-manager' ),
+			'altText'       => __( 'Alt text', 'cf7-email-template-manager' ),
+			'width'         => __( 'Width (px)', 'cf7-email-template-manager' ),
+			'height'        => __( 'Height (px)', 'cf7-email-template-manager' ),
+			'fieldRows'     => __( 'Rows', 'cf7-email-template-manager' ),
+			'rowLabel'      => __( 'Label', 'cf7-email-template-manager' ),
+			'rowTag'        => __( '[your-name]', 'cf7-email-template-manager' ),
+			'addRow'        => __( 'Add row', 'cf7-email-template-manager' ),
+			'addFormFields' => __( 'Add all form fields', 'cf7-email-template-manager' ),
+			'removeRow'     => __( 'Remove row', 'cf7-email-template-manager' ),
+			'chooseImage'   => __( 'Choose image', 'cf7-email-template-manager' ),
+			'moveUp'        => __( 'Move up', 'cf7-email-template-manager' ),
+			'moveDown'      => __( 'Move down', 'cf7-email-template-manager' ),
+			'duplicate'     => __( 'Duplicate block', 'cf7-email-template-manager' ),
+			'remove'        => __( 'Remove block', 'cf7-email-template-manager' ),
+			'headingSample' => __( 'Heading', 'cf7-email-template-manager' ),
+			'buttonSample'  => __( 'Click here', 'cf7-email-template-manager' ),
+		);
 	}
 
 	/**
@@ -188,10 +296,21 @@ class CF7ETM_Admin {
 				)
 			);
 
+			// The builder picks images out of the media library.
+			wp_enqueue_media();
+
 			wp_enqueue_script(
 				'cf7etm-editor',
 				CF7ETM_URL . 'assets/js/editor.js',
 				array( 'cf7etm-admin' ),
+				CF7ETM_VERSION,
+				true
+			);
+
+			wp_enqueue_script(
+				'cf7etm-builder',
+				CF7ETM_URL . 'assets/js/builder.js',
+				array( 'cf7etm-editor', 'media-editor', 'jquery-ui-sortable', 'jquery-ui-draggable' ),
 				CF7ETM_VERSION,
 				true
 			);
@@ -203,6 +322,8 @@ class CF7ETM_Admin {
 					// False when the user turned syntax highlighting off; the
 					// editor then falls back to a plain textarea.
 					'codeEditor' => $settings ? $settings : false,
+					'blocks'     => wp_list_pluck( self::block_types(), 'label' ),
+					'i18n'       => self::builder_i18n(),
 				)
 			);
 		}
@@ -274,6 +395,54 @@ class CF7ETM_Admin {
 	}
 
 	/**
+	 * Streams one stored upload to an administrator.
+	 *
+	 * The files live outside the web root's reach on purpose, so this is the
+	 * only way to them, and it costs a capability check and a nonce.
+	 */
+	public static function handle_download() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the nonce is verified on the next line.
+		$entry_id = absint( $_GET['entry'] ?? 0 );
+
+		self::verify( 'cf7etm_download_' . $entry_id );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
+		$field = sanitize_text_field( wp_unslash( $_GET['field'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
+		$index = absint( $_GET['index'] ?? 0 );
+
+		$entry = CF7ETM_Submissions::get( $entry_id );
+		$files = $entry ? CF7ETM_Submissions::files( $entry ) : array();
+		$file  = $files[ $field ][ $index ] ?? null;
+		$path  = $file ? CF7ETM_Submissions::file_path( $file['path'] ) : '';
+
+		if ( ! $path ) {
+			wp_die(
+				esc_html__( 'That file is no longer available.', 'cf7-email-template-manager' ),
+				404
+			);
+		}
+
+		nocache_headers();
+
+		header( 'Content-Type: ' . ( wp_check_filetype( $path )['type'] ?: 'application/octet-stream' ) );
+		header( 'Content-Length: ' . filesize( $path ) );
+		header(
+			'Content-Disposition: attachment; filename="' . sanitize_file_name( $file['name'] ) . '"'
+		);
+		// The browser must not sniff a different type out of the bytes.
+		header( 'X-Content-Type-Options: nosniff' );
+
+		readfile( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- streaming a local file, not fetching a URL.
+		exit;
+	}
+
+	/** Renders the submissions log. */
+	public static function render_submissions() {
+		self::view( 'submissions' );
+	}
+
+	/**
 	 * Shared page header markup.
 	 *
 	 * @param string $title   Screen title.
@@ -305,6 +474,7 @@ class CF7ETM_Admin {
 			'import_failed'  => array( 'error', __( 'That file could not be imported. Please upload a valid export file.', 'cf7-email-template-manager' ) ),
 			'log_cleared'    => array( 'success', __( 'Debug log cleared.', 'cf7-email-template-manager' ) ),
 			'template_saved' => array( 'success', __( 'Template saved.', 'cf7-email-template-manager' ) ),
+			'entry_deleted'  => array( 'success', __( 'Submission deleted.', 'cf7-email-template-manager' ) ),
 		);
 
 		if ( ! isset( $messages[ $notice ] ) ) {

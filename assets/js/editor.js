@@ -68,6 +68,22 @@
 	}
 
 	/**
+	 * Replaces the body, wherever it lives.
+	 *
+	 * @param {string} html New body content.
+	 */
+	function setBody( html ) {
+		if ( editor ) {
+			editor.setValue( html );
+		} else {
+			bodyArea.value = html;
+		}
+
+		markDirty();
+		scheduleReport();
+	}
+
+	/**
 	 * Collects the whole template from the form.
 	 *
 	 * @return {Object} Template payload.
@@ -150,6 +166,7 @@
 			const end = field.selectionEnd || 0;
 
 			field.setRangeText( text, start, end, 'end' );
+			field.dispatchEvent( new Event( 'input', { bubbles: true } ) );
 			field.focus();
 		}
 
@@ -468,15 +485,7 @@
 			subject.value = subject.value.split( search ).join( replacement );
 		}
 
-		const body = bodyValue().split( search ).join( replacement );
-
-		if ( editor ) {
-			editor.setValue( body );
-		} else {
-			bodyArea.value = body;
-		}
-
-		markDirty();
+		setBody( bodyValue().split( search ).join( replacement ) );
 	}
 
 	if ( formSelect ) {
@@ -638,6 +647,24 @@
 	} catch ( error ) {
 		// No recents yet.
 	}
+
+	/*
+	 * What the visual builder needs from this file. The builder owns the
+	 * blocks; this file stays the only thing that touches CodeMirror.
+	 */
+	window.cf7etmBody = {
+		get: bodyValue,
+		set: setBody,
+		tags: () => availableTags,
+		focusField: ( field ) => {
+			lastField = field;
+		},
+		refresh: () => {
+			if ( editor ) {
+				editor.refresh();
+			}
+		},
+	};
 
 	refreshTags();
 
