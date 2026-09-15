@@ -571,6 +571,77 @@ wp_delete_file( $source_file );
 wp_delete_file( $blocked );
 
 /* -------------------------------------------------------------------------
+ * Demo templates
+ * ---------------------------------------------------------------------- */
+
+require_once CF7ETM_DIR . 'includes/starter-templates.php';
+
+$starter_names = wp_list_pluck( cf7etm_starter_templates(), 'name' );
+$all_templates = static function () {
+	return get_posts(
+		array(
+			'post_type'      => CF7ETM_Template_Post_Type::POST_TYPE,
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		)
+	);
+};
+$missing_names = static function () use ( $starter_names ) {
+	return array_values( array_filter( $starter_names, static fn( $name ) => ! cf7etm_template_name_taken( $name ) ) );
+};
+
+$first_run  = cf7etm_install_starter_templates();
+$second_run = cf7etm_install_starter_templates();
+
+cf7etm_check( 'Every demo template exists after installing', array() === $missing_names(), implode( ', ', $missing_names() ) );
+cf7etm_check( 'Installing demos again adds nothing', array() === $second_run, wp_json_encode( $second_run ) );
+
+// Leave the site with exactly the templates it had.
+foreach ( $first_run as $demo_id ) {
+	wp_delete_post( $demo_id, true );
+}
+
+/*
+ * The fresh-install bug: activating both plugins together ran activation
+ * before Contact Form 7 loaded, so the demos were never seeded. The first
+ * admin page load has to catch up.
+ */
+cf7etm_check(
+	'Demo seeding runs on admin load, not only on activation',
+	false !== has_action( 'admin_init', array( 'CF7ETM_Plugin', 'maybe_seed' ) )
+);
+
+$seeded_flag = get_option( 'cf7etm_seeded' );
+$before_seed = $all_templates();
+$admin_ids   = get_users( array( 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ) );
+
+delete_option( 'cf7etm_seeded' );
+wp_set_current_user( (int) ( $admin_ids[0] ?? 0 ) );
+
+CF7ETM_Plugin::maybe_seed();
+
+cf7etm_check( 'An unseeded site gets its demo templates', array() === $missing_names() && (bool) get_option( 'cf7etm_seeded' ) );
+
+$after_first_seed = $all_templates();
+
+CF7ETM_Plugin::maybe_seed();
+
+cf7etm_check( 'Seeding only happens once', $after_first_seed === $all_templates() );
+
+wp_set_current_user( 0 );
+
+foreach ( array_diff( $after_first_seed, $before_seed ) as $demo_id ) {
+	wp_delete_post( $demo_id, true );
+}
+
+if ( false === $seeded_flag ) {
+	delete_option( 'cf7etm_seeded' );
+} else {
+	update_option( 'cf7etm_seeded', $seeded_flag );
+}
+
+/* -------------------------------------------------------------------------
  * Clean up
  * ---------------------------------------------------------------------- */
 

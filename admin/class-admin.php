@@ -23,6 +23,7 @@ class CF7ETM_Admin {
 		add_action( 'admin_post_cf7etm_save_settings', array( __CLASS__, 'handle_save_settings' ) );
 		add_action( 'admin_post_cf7etm_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'admin_post_cf7etm_import', array( __CLASS__, 'handle_import' ) );
+		add_action( 'admin_post_cf7etm_install_demos', array( __CLASS__, 'handle_install_demos' ) );
 		add_action( 'admin_post_cf7etm_clear_log', array( __CLASS__, 'handle_clear_log' ) );
 		add_action( 'admin_post_cf7etm_download', array( __CLASS__, 'handle_download' ) );
 
@@ -468,13 +469,15 @@ class CF7ETM_Admin {
 		}
 
 		$messages = array(
-			'branding_saved' => array( 'success', __( 'Branding saved.', 'cf7-email-template-manager' ) ),
-			'settings_saved' => array( 'success', __( 'Settings saved.', 'cf7-email-template-manager' ) ),
-			'imported'       => array( 'success', __( 'Templates imported.', 'cf7-email-template-manager' ) ),
-			'import_failed'  => array( 'error', __( 'That file could not be imported. Please upload a valid export file.', 'cf7-email-template-manager' ) ),
-			'log_cleared'    => array( 'success', __( 'Debug log cleared.', 'cf7-email-template-manager' ) ),
-			'template_saved' => array( 'success', __( 'Template saved.', 'cf7-email-template-manager' ) ),
-			'entry_deleted'  => array( 'success', __( 'Submission deleted.', 'cf7-email-template-manager' ) ),
+			'branding_saved'  => array( 'success', __( 'Branding saved.', 'cf7-email-template-manager' ) ),
+			'settings_saved'  => array( 'success', __( 'Settings saved.', 'cf7-email-template-manager' ) ),
+			'imported'        => array( 'success', __( 'Templates imported.', 'cf7-email-template-manager' ) ),
+			'import_failed'   => array( 'error', __( 'That file could not be imported. Please upload a valid export file.', 'cf7-email-template-manager' ) ),
+			'log_cleared'     => array( 'success', __( 'Debug log cleared.', 'cf7-email-template-manager' ) ),
+			'template_saved'  => array( 'success', __( 'Template saved.', 'cf7-email-template-manager' ) ),
+			'entry_deleted'   => array( 'success', __( 'Submission deleted.', 'cf7-email-template-manager' ) ),
+			'demos_installed' => array( 'success', __( 'Demo templates installed.', 'cf7-email-template-manager' ) ),
+			'demos_present'   => array( 'info', __( 'All demo templates are already installed. Nothing was added.', 'cf7-email-template-manager' ) ),
 		);
 
 		if ( ! isset( $messages[ $notice ] ) ) {
@@ -543,6 +546,15 @@ class CF7ETM_Admin {
 		update_option( CF7ETM_Plugin::SETTINGS, $clean );
 
 		self::redirect( 'settings', 'settings_saved' );
+	}
+
+	/** Installs whichever starter templates are missing. */
+	public static function handle_install_demos() {
+		self::verify( 'cf7etm_install_demos' );
+
+		require_once CF7ETM_DIR . 'includes/starter-templates.php';
+
+		self::redirect( 'tools', cf7etm_install_starter_templates() ? 'demos_installed' : 'demos_present' );
 	}
 
 	/** Streams a JSON export of all templates. */

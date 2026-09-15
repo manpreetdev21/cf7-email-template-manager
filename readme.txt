@@ -4,7 +4,7 @@ Tags: contact form 7, email template, html email, cf7, email
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,10 @@ Yes. Contact Form 7 still sends the mail through WordPress, so any SMTP plugin k
 They stay in the database. Data is only removed if you tick "Delete all plugin data" in Settings → Advanced first.
 
 == Changelog ==
+
+= 1.2.1 =
+* Fix: demo templates were never installed when both plugins were activated together, or when Contact Form 7 was installed after this plugin. They are now added on the first admin page load once Contact Form 7 is active.
+* New "Install demo templates" button under Tools. It only adds starters that are missing, so it is safe to run again.
 
 = 1.2.0 =
 * New Submissions screen: every accepted Contact Form 7 submission is saved to its own database table, with the email result recorded alongside it.

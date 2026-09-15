@@ -21,6 +21,19 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 	<div class="cf7etm-columns">
 
 		<div class="cf7etm-card">
+			<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Demo Templates', 'cf7-email-template-manager' ); ?></h2></div>
+			<p class="cf7etm-muted"><?php esc_html_e( 'Add the ready-made starter templates: contact notification, customer thank-you, quote, booking, support, newsletter, file upload, simple and blank. Any you already have are skipped, so it is safe to run again.', 'cf7-email-template-manager' ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="cf7etm_install_demos" />
+				<?php wp_nonce_field( 'cf7etm_install_demos' ); ?>
+				<button type="submit" class="cf7etm-btn cf7etm-btn--primary">
+					<span class="dashicons dashicons-welcome-add-page" aria-hidden="true"></span>
+					<?php esc_html_e( 'Install demo templates', 'cf7-email-template-manager' ); ?>
+				</button>
+			</form>
+		</div>
+
+		<div class="cf7etm-card">
 			<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Export', 'cf7-email-template-manager' ); ?></h2></div>
 			<p class="cf7etm-muted">
 				<?php

@@ -294,14 +294,21 @@ Received [_date] at [_time] from [_remote_ip]',
 }
 
 /**
- * Inserts the starter templates. Runs once, on first activation.
+ * Inserts any starter templates that are not already on the site.
  *
- * @return int Number of templates created.
+ * Safe to run again: a starter whose name is already taken is left alone, so
+ * the Tools button tops up missing demos without ever duplicating one.
+ *
+ * @return int[] IDs of the templates created.
  */
 function cf7etm_install_starter_templates() {
-	$created = 0;
+	$created = array();
 
 	foreach ( cf7etm_starter_templates() as $template ) {
+		if ( cf7etm_template_name_taken( $template['name'] ) ) {
+			continue;
+		}
+
 		$id = CF7ETM_Template_Post_Type::save(
 			wp_parse_args(
 				$template,
@@ -317,9 +324,29 @@ function cf7etm_install_starter_templates() {
 		);
 
 		if ( ! is_wp_error( $id ) ) {
-			++$created;
+			$created[] = $id;
 		}
 	}
 
 	return $created;
+}
+
+/**
+ * Whether a live template already uses this name. Trashed ones do not count,
+ * so a demo someone binned can be brought back.
+ *
+ * @param string $name Template name.
+ * @return bool
+ */
+function cf7etm_template_name_taken( $name ) {
+	return (bool) get_posts(
+		array(
+			'post_type'      => CF7ETM_Template_Post_Type::POST_TYPE,
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'title'          => $name,
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		)
+	);
 }

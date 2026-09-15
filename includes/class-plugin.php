@@ -48,6 +48,8 @@ class CF7ETM_Plugin {
 
 			CF7ETM_Admin::init();
 			CF7ETM_Ajax::init();
+
+			add_action( 'admin_init', array( __CLASS__, 'maybe_seed' ) );
 		}
 	}
 
@@ -67,12 +69,25 @@ class CF7ETM_Plugin {
 
 		add_option( self::SETTINGS, self::default_settings() );
 
-		if ( ! get_option( 'cf7etm_seeded' ) ) {
-			require_once CF7ETM_DIR . 'includes/class-branding.php';
-			require_once CF7ETM_DIR . 'includes/starter-templates.php';
-			cf7etm_install_starter_templates();
-			update_option( 'cf7etm_seeded', CF7ETM_VERSION );
+		self::maybe_seed();
+	}
+
+	/**
+	 * Installs the starter templates once, as soon as Contact Form 7 is there.
+	 *
+	 * Activation alone cannot do this. Bulk-activating both plugins runs this
+	 * plugin's hook before Contact Form 7 has loaded, and installing Contact
+	 * Form 7 afterwards never re-runs activation — so it also runs on the first
+	 * admin page an editor opens.
+	 */
+	public static function maybe_seed() {
+		if ( get_option( 'cf7etm_seeded' ) || ! current_user_can( self::cap() ) ) {
+			return;
 		}
+
+		require_once CF7ETM_DIR . 'includes/starter-templates.php';
+		cf7etm_install_starter_templates();
+		update_option( 'cf7etm_seeded', CF7ETM_VERSION );
 	}
 
 	/**
