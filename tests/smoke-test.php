@@ -642,6 +642,54 @@ if ( false === $seeded_flag ) {
 }
 
 /* -------------------------------------------------------------------------
+ * Branding gaps and logo reachability
+ * ---------------------------------------------------------------------- */
+
+$gap_branding = CF7ETM_Branding::get();
+
+CF7ETM_Branding::save(
+	array_merge(
+		$gap_branding,
+		array(
+			'address'          => '',
+			'social_facebook'  => '',
+			'social_twitter'   => '',
+			'social_linkedin'  => '',
+			'social_instagram' => '',
+			'footer_text'      => 'Footer line',
+		)
+	)
+);
+
+$gap_body = CF7ETM_Branding::replace(
+	'<table>' .
+	'<tr><td style="padding:8px 32px;"><p style="margin:0 0 12px;">[cf7etm_address]</p></td></tr>' .
+	'<tr><td style="padding:8px 32px;"><p style="margin:0 0 12px;">[cf7etm_social_links]</p></td></tr>' .
+	'<tr><td style="padding:8px 32px;"><p style="margin:0 0 12px;">[cf7etm_footer_text]</p></td></tr>' .
+	'<tr><td style="height:24px;line-height:24px;font-size:0;">&nbsp;</td></tr>' .
+	'</table>',
+	true
+);
+
+cf7etm_check( 'An empty branding value leaves no empty paragraph', ! str_contains( $gap_body, '<p style="margin:0 0 12px;"></p>' ), $gap_body );
+cf7etm_check( 'The padded row around it goes too', 1 === substr_count( $gap_body, 'padding:8px 32px' ), $gap_body );
+cf7etm_check( 'The row that still has content stays', str_contains( $gap_body, 'Footer line' ) );
+cf7etm_check( 'A deliberate spacer row is left alone', str_contains( $gap_body, 'height:24px' ), $gap_body );
+
+$text_body = CF7ETM_Branding::replace( "Address: [cf7etm_address]\nFooter: [cf7etm_footer_text]", false );
+
+cf7etm_check( 'Plain-text bodies are not pruned', str_contains( $text_body, 'Address: ' ) );
+
+CF7ETM_Branding::save( $gap_branding );
+
+foreach ( array( 'http://localhost/logo.png', 'http://127.0.0.1/logo.png', 'http://192.168.1.10/logo.png', 'https://mysite.local/logo.png' ) as $local_url ) {
+	cf7etm_check( 'Unreachable logo host flagged: ' . wp_parse_url( $local_url, PHP_URL_HOST ), CF7ETM_Branding::is_private_host( $local_url ) );
+}
+
+cf7etm_check( 'A public logo host is not flagged', ! CF7ETM_Branding::is_private_host( 'https://example.com/logo.png' ) );
+cf7etm_check( 'An empty logo is not flagged', ! CF7ETM_Branding::is_private_host( '' ) );
+
+/* -------------------------------------------------------------------------
  * Clean up
  * ---------------------------------------------------------------------- */
 

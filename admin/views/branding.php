@@ -49,6 +49,17 @@ $branding = CF7ETM_Branding::get();
 						<?php esc_html_e( 'Use a hosted image; email clients cannot read local files.', 'cf7-email-template-manager' ); ?>
 						<code>[cf7etm_logo]</code>
 					</span>
+					<?php if ( $branding['logo'] && CF7ETM_Branding::is_private_host( $branding['logo'] ) ) : ?>
+						<span class="cf7etm-alert cf7etm-alert--warning">
+							<?php
+							printf(
+								/* translators: %s: host name of the logo URL */
+								esc_html__( 'This logo is served from %s, which only exists on this machine. It shows in the preview here, but stays blank in the email your visitors receive. Upload the logo on the live site, or point this field at a publicly reachable URL.', 'cf7-email-template-manager' ),
+								esc_html( (string) wp_parse_url( $branding['logo'], PHP_URL_HOST ) )
+							);
+							?>
+						</span>
+					<?php endif; ?>
 					<?php if ( $branding['logo'] ) : ?>
 						<img class="cf7etm-media__preview" src="<?php echo esc_url( $branding['logo'] ); ?>" alt="" data-media-preview />
 					<?php else : ?>

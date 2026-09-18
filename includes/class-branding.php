@@ -143,7 +143,67 @@ class CF7ETM_Branding {
 			'[cf7etm_year]'            => wp_date( 'Y' ),
 		);
 
-		return str_replace( array_keys( $map ), array_values( $map ), $text );
+		$out = str_replace( array_keys( $map ), array_values( $map ), $text );
+
+		return $html ? self::prune_empty( $out ) : $out;
+	}
+
+	/**
+	 * Drops the wrappers a branding tag leaves behind when it has no value.
+	 *
+	 * An address or social links nobody filled in would otherwise still render
+	 * as an empty paragraph — and, in a block template, as a whole padded row
+	 * with its own background colour. Only the outgoing email is cleaned; the
+	 * stored template keeps its structure so the editor still round-trips.
+	 *
+	 * @param string $html HTML body.
+	 * @return string
+	 */
+	public static function prune_empty( $html ) {
+		$patterns = array(
+			// A paragraph left with nothing in it.
+			'#<p\b[^>]*>\s*</p>#i',
+			// A row whose every cell ended up empty. A spacer cell holding
+			// &nbsp; is deliberate, so it does not match.
+			'#<tr\b[^>]*>(?:\s*<t[dh]\b[^>]*>\s*</t[dh]>)+\s*</tr>#i',
+		);
+
+		do {
+			$before = $html;
+			$html   = preg_replace( $patterns, '', $html ) ?? $before;
+		} while ( $html !== $before );
+
+		return $html;
+	}
+
+	/**
+	 * Whether a URL points somewhere only this machine or network can reach.
+	 *
+	 * An image served from localhost renders in the admin preview and stays
+	 * blank in the email that lands in someone's inbox.
+	 *
+	 * @param string $url Absolute URL.
+	 * @return bool
+	 */
+	public static function is_private_host( $url ) {
+		$host = strtolower( (string) wp_parse_url( (string) $url, PHP_URL_HOST ) );
+
+		if ( '' === $host ) {
+			return false;
+		}
+
+		foreach ( array( '.local', '.test', '.localhost', '.internal' ) as $suffix ) {
+			if ( str_ends_with( $host, $suffix ) ) {
+				return true;
+			}
+		}
+
+		if ( 'localhost' === $host ) {
+			return true;
+		}
+
+		return filter_var( $host, FILTER_VALIDATE_IP )
+			&& ! filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE );
 	}
 
 	/**
