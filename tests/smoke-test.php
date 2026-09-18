@@ -689,6 +689,47 @@ foreach ( array( 'http://localhost/logo.png', 'http://127.0.0.1/logo.png', 'http
 cf7etm_check( 'A public logo host is not flagged', ! CF7ETM_Branding::is_private_host( 'https://example.com/logo.png' ) );
 cf7etm_check( 'An empty logo is not flagged', ! CF7ETM_Branding::is_private_host( '' ) );
 
+/*
+ * Contact Form 7 puts its own digest of an upload in the posted data. It must
+ * never reach the screen as if the visitor had typed it.
+ */
+$digest_entry = array(
+	'id'     => 0,
+	'fields' => array(
+		'your-name' => 'Jane Tester',
+		'file-145'  => '78410ba7cfde1bc7950b88ac10d19f218be541fb13a4cdeb9d1041191b9270de',
+	),
+	'files'  => array( 'file-145' => array( array( 'name' => 'screenshot.png', 'path' => '', 'size' => 10 ) ) ),
+);
+
+$digest_answers = CF7ETM_Submissions::answers( $digest_entry );
+
+cf7etm_check(
+	'An upload field is not shown as a typed answer',
+	array( 'your-name' => 'Jane Tester' ) === $digest_answers,
+	wp_json_encode( $digest_answers )
+);
+
+cf7etm_check(
+	'The upload is still listed as a file',
+	'screenshot.png' === ( CF7ETM_Submissions::files( $digest_entry )['file-145'][0]['name'] ?? '' )
+);
+
+/*
+ * CSV export. A cell that opens with a formula character is a real attack on
+ * whoever opens the file in Excel, so it must never survive as one.
+ */
+foreach ( array( '=1+1', '+1', '-1', '@SUM(A1)', "\tcmd", "\rcmd" ) as $risky ) {
+	cf7etm_check(
+		'A formula cell is neutralised: ' . trim( $risky ),
+		str_starts_with( CF7ETM_Submissions::csv_cell( $risky ), "'" ),
+		CF7ETM_Submissions::csv_cell( $risky )
+	);
+}
+
+cf7etm_check( 'An ordinary answer is left alone', 'Jane Tester' === CF7ETM_Submissions::csv_cell( 'Jane Tester' ) );
+cf7etm_check( 'An email address is left alone', 'jane@example.com' === CF7ETM_Submissions::csv_cell( 'jane@example.com' ) );
+
 /* -------------------------------------------------------------------------
  * Clean up
  * ---------------------------------------------------------------------- */

@@ -69,66 +69,7 @@ $entry = $entry_id ? CF7ETM_Submissions::get( $entry_id ) : null;
 		<div class="cf7etm-card cf7etm-card--flush">
 			<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Submitted Data', 'cf7-email-template-manager' ); ?></h2></div>
 
-			<?php if ( ! $entry['fields'] && ! $entry['files'] ) : ?>
-				<p class="cf7etm-muted"><?php esc_html_e( 'This submission had no fields.', 'cf7-email-template-manager' ); ?></p>
-			<?php else : ?>
-				<table class="cf7etm-entry">
-					<tbody>
-						<?php foreach ( $entry['fields'] as $name => $value ) : ?>
-							<tr>
-								<th scope="row">
-									<?php echo esc_html( CF7ETM_CF7_Bridge::friendly_label( $name ) ); ?>
-									<code>[<?php echo esc_html( $name ); ?>]</code>
-								</th>
-								<td>
-									<?php $flat = CF7ETM_Submissions::flatten( $value ); ?>
-									<?php if ( '' === trim( $flat ) ) : ?>
-										<span class="cf7etm-muted">&mdash;</span>
-									<?php else : ?>
-										<div class="cf7etm-entry__value"><?php echo nl2br( esc_html( $flat ) ); ?></div>
-									<?php endif; ?>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-
-						<?php foreach ( CF7ETM_Submissions::files( $entry ) as $name => $files ) : ?>
-							<tr>
-								<th scope="row">
-									<?php echo esc_html( CF7ETM_CF7_Bridge::friendly_label( $name ) ); ?>
-									<code>[<?php echo esc_html( $name ); ?>]</code>
-								</th>
-								<td>
-									<ul class="cf7etm-list-plain">
-										<?php foreach ( $files as $file ) : ?>
-											<li>
-												<?php if ( '' !== $file['path'] && CF7ETM_Submissions::file_path( $file['path'] ) ) : ?>
-													<a class="cf7etm-btn cf7etm-btn--small"
-														href="<?php echo esc_url( CF7ETM_Submissions::download_url( $entry['id'], $name, $file['index'] ) ); ?>">
-														<span class="dashicons dashicons-download" aria-hidden="true"></span>
-														<?php echo esc_html( $file['name'] ); ?>
-													</a>
-													<?php if ( $file['size'] ) : ?>
-														<span class="cf7etm-muted"><?php echo esc_html( size_format( $file['size'] ) ); ?></span>
-													<?php endif; ?>
-												<?php else : ?>
-													<?php echo esc_html( $file['name'] ); ?>
-													<span class="cf7etm-muted">
-														<?php
-														echo 'type' === $file['error']
-															? esc_html__( '— not stored, WordPress does not allow this file type', 'cf7-email-template-manager' )
-															: esc_html__( '— file no longer on disk', 'cf7-email-template-manager' );
-														?>
-													</span>
-												<?php endif; ?>
-											</li>
-										<?php endforeach; ?>
-									</ul>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php endif; ?>
+			<?php require CF7ETM_DIR . 'admin/views/partial-entry-data.php'; ?>
 		</div>
 
 	<?php else : ?>
@@ -137,7 +78,28 @@ $entry = $entry_id ? CF7ETM_Submissions::get( $entry_id ) : null;
 		$table = new CF7ETM_Submissions_List_Table();
 		$table->prepare_items();
 
-		CF7ETM_Admin::header( __( 'Form Submissions', 'cf7-email-template-manager' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters, carried into the export link.
+		$export_args = array_filter(
+			array(
+				'action' => 'cf7etm_export_entries',
+				'form'   => $table->current_form(),
+				'status' => isset( $_REQUEST['status'] ) ? sanitize_key( wp_unslash( $_REQUEST['status'] ) ) : '',
+				's'      => isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : '',
+			),
+			static fn( $value ) => '' !== $value && 0 !== $value
+		);
+
+		CF7ETM_Admin::header(
+			__( 'Form Submissions', 'cf7-email-template-manager' ),
+			$table->has_items()
+				? sprintf(
+					'<a class="cf7etm-btn" href="%s"><span class="dashicons dashicons-media-spreadsheet"></span>%s</a>',
+					esc_url( wp_nonce_url( add_query_arg( $export_args, admin_url( 'admin-post.php' ) ), 'cf7etm_export_entries' ) ),
+					esc_html__( 'Export CSV', 'cf7-email-template-manager' )
+				)
+				: ''
+		);
+
 		CF7ETM_Admin::flash();
 		?>
 

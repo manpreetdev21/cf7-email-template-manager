@@ -296,6 +296,23 @@
 			);
 		}
 
+		// Details opens the whole submission under its row.
+		const entryToggle = event.target.closest( '[data-cf7etm-entry-toggle]' );
+
+		if ( entryToggle ) {
+			const row = document.getElementById( entryToggle.getAttribute( 'aria-controls' ) );
+
+			if ( row ) {
+				const open = row.hidden;
+
+				row.hidden = ! open;
+				entryToggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+				entryToggle.classList.toggle( 'is-open', open );
+			}
+
+			return;
+		}
+
 		// Any link that carries data-cf7etm-confirm asks first, then follows.
 		const guarded = event.target.closest( '[data-cf7etm-confirm]' );
 

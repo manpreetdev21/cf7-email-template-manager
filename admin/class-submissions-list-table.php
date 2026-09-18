@@ -79,9 +79,7 @@ class CF7ETM_Submissions_List_Table extends WP_List_Table {
 			$columns[ 'field-' . $name ] = $label;
 		}
 
-		if ( ! $this->fields ) {
-			$columns['summary'] = __( 'Submitted Data', 'cf7-email-template-manager' );
-		}
+		$columns['details'] = __( 'Submitted Data', 'cf7-email-template-manager' );
 
 		return $columns;
 	}
@@ -322,18 +320,12 @@ class CF7ETM_Submissions_List_Table extends WP_List_Table {
 	 * @return string
 	 */
 	public function column_default( $item, $column ) {
-		if ( 'summary' === $column ) {
-			$parts = array();
-
-			foreach ( array_slice( $item['fields'], 0, 3, true ) as $name => $value ) {
-				$parts[] = sprintf(
-					'<span class="cf7etm-entry__pair"><em>%s</em> %s</span>',
-					esc_html( CF7ETM_CF7_Bridge::friendly_label( $name ) ),
-					esc_html( self::shorten( CF7ETM_Submissions::flatten( $value ) ) )
-				);
-			}
-
-			return $parts ? implode( ' ', $parts ) : '<span class="cf7etm-muted">&mdash;</span>';
+		if ( 'details' === $column ) {
+			return sprintf(
+				'<button type="button" class="cf7etm-btn cf7etm-btn--small" data-cf7etm-entry-toggle aria-expanded="false" aria-controls="cf7etm-entry-%1$d"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span>%2$s</button>',
+				$item['id'],
+				esc_html__( 'Details', 'cf7-email-template-manager' )
+			);
 		}
 
 		if ( ! str_starts_with( $column, 'field-' ) ) {
@@ -388,6 +380,29 @@ class CF7ETM_Submissions_List_Table extends WP_List_Table {
 		}
 
 		return implode( ', ', $links );
+	}
+
+	/**
+	 * Each row is followed by a hidden one holding the whole submission, so
+	 * Details opens it in place instead of sending anyone to another screen.
+	 *
+	 * @param array $item Submission.
+	 */
+	public function single_row( $item ) {
+		echo '<tr>';
+		$this->single_row_columns( $item );
+		echo '</tr>';
+
+		printf(
+			'<tr class="cf7etm-entry__row" id="cf7etm-entry-%1$d" hidden><td colspan="%2$d">',
+			(int) $item['id'],
+			(int) $this->get_column_count()
+		);
+
+		$entry = $item;
+		require CF7ETM_DIR . 'admin/views/partial-entry-data.php';
+
+		echo '</td></tr>';
 	}
 
 	/**

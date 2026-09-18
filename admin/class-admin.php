@@ -24,6 +24,7 @@ class CF7ETM_Admin {
 		add_action( 'admin_post_cf7etm_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'admin_post_cf7etm_import', array( __CLASS__, 'handle_import' ) );
 		add_action( 'admin_post_cf7etm_install_demos', array( __CLASS__, 'handle_install_demos' ) );
+		add_action( 'admin_post_cf7etm_export_entries', array( __CLASS__, 'handle_export_entries' ) );
 		add_action( 'admin_post_cf7etm_clear_log', array( __CLASS__, 'handle_clear_log' ) );
 		add_action( 'admin_post_cf7etm_download', array( __CLASS__, 'handle_download' ) );
 
@@ -546,6 +547,153 @@ class CF7ETM_Admin {
 		update_option( CF7ETM_Plugin::SETTINGS, $clean );
 
 		self::redirect( 'settings', 'settings_saved' );
+	}
+
+	/**
+	 * Streams the submissions currently being viewed as a CSV file.
+	 *
+	 * The same form, email-result and search filters the screen is using are
+	 * applied, so what downloads is what was on screen — not just the page
+	 * that happened to be open.
+	 */
+	public static function handle_export_entries() {
+		self::verify( 'cf7etm_export_entries' );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
+		$form_id = absint( $_REQUEST['form'] ?? 0 );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
+		$status = sanitize_key( $_REQUEST['status'] ?? '' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
+		$search = sanitize_text_field( wp_unslash( $_REQUEST['s'] ?? '' ) );
+
+		$filters = array(
+			'form_id'  => $form_id,
+			'status'   => $status,
+			'search'   => $search,
+			'per_page' => 200,
+		);
+
+		/*
+		 * Two passes over the rows, 200 at a time. The first works out which
+		 * columns this export needs; the second writes them. Batching keeps a
+		 * long log from being held in memory all at once.
+		 */
+		$answers = array();
+		$files   = array();
+
+		// A chosen form contributes its own field order first.
+		foreach ( CF7ETM_CF7_Bridge::form_tags( $form_id ) as $tag ) {
+			if ( $tag['is_file'] ) {
+				$files[ $tag['name'] ] = $tag['label'];
+			} else {
+				$answers[ $tag['name'] ] = $tag['label'];
+			}
+		}
+
+		foreach ( self::entry_batches( $filters ) as $batch ) {
+			foreach ( $batch as $entry ) {
+				foreach ( array_keys( CF7ETM_Submissions::answers( $entry ) ) as $name ) {
+					$answers[ $name ] = $answers[ $name ] ?? CF7ETM_CF7_Bridge::friendly_label( $name );
+				}
+
+				foreach ( array_keys( CF7ETM_Submissions::files( $entry ) ) as $name ) {
+					$files[ $name ] = $files[ $name ] ?? CF7ETM_CF7_Bridge::friendly_label( $name );
+				}
+			}
+		}
+
+		$name = $form_id ? sanitize_title( CF7ETM_Submissions::forms()[ $form_id ]['title'] ?? (string) $form_id ) : 'all-forms';
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=cf7-submissions-' . $name . '-' . gmdate( 'Y-m-d' ) . '.csv' );
+
+		$out = fopen( 'php://output', 'w' );
+
+		// Without the byte order mark Excel reads UTF-8 as its own codepage.
+		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- writing to the response, not the filesystem.
+
+		self::csv_row(
+			$out,
+			array_merge(
+				array(
+					__( 'Submitted', 'cf7-email-template-manager' ),
+					__( 'Form', 'cf7-email-template-manager' ),
+					__( 'Email result', 'cf7-email-template-manager' ),
+					__( 'IP address', 'cf7-email-template-manager' ),
+				),
+				array_values( $answers ),
+				array_values( $files )
+			)
+		);
+
+		foreach ( self::entry_batches( $filters ) as $batch ) {
+			foreach ( $batch as $entry ) {
+				$row = array(
+					$entry['submitted_at'],
+					$entry['form_title'],
+					'sent' === $entry['status']
+						? __( 'Sent', 'cf7-email-template-manager' )
+						: __( 'Not sent', 'cf7-email-template-manager' ),
+					$entry['remote_ip'],
+				);
+
+				$entry_answers = CF7ETM_Submissions::answers( $entry );
+
+				foreach ( array_keys( $answers ) as $field ) {
+					$row[] = isset( $entry_answers[ $field ] )
+						? CF7ETM_Submissions::flatten( $entry_answers[ $field ] )
+						: '';
+				}
+
+				$entry_files = CF7ETM_Submissions::files( $entry );
+
+				foreach ( array_keys( $files ) as $field ) {
+					$row[] = isset( $entry_files[ $field ] )
+						? implode( ', ', wp_list_pluck( $entry_files[ $field ], 'name' ) )
+						: '';
+				}
+
+				self::csv_row( $out, $row );
+			}
+		}
+
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- closing the response stream.
+		exit;
+	}
+
+	/**
+	 * Yields matching submissions a page at a time.
+	 *
+	 * @param array $filters Query arguments, including per_page.
+	 * @return Generator
+	 */
+	private static function entry_batches( $filters ) {
+		$page = 1;
+
+		do {
+			$results = CF7ETM_Submissions::query( array( 'page' => $page ) + $filters );
+
+			if ( $results['items'] ) {
+				yield $results['items'];
+			}
+
+			$seen = $page * $filters['per_page'];
+			++$page;
+		} while ( $seen < $results['total'] );
+	}
+
+	/**
+	 * Writes one CSV line.
+	 *
+	 * A cell that opens with =, +, - or @ is treated as a formula by Excel and
+	 * Google Sheets, so it is quoted into being plain text first.
+	 *
+	 * @param resource $handle Output stream.
+	 * @param array    $row    Cells.
+	 */
+	private static function csv_row( $handle, $row ) {
+		fputcsv( $handle, array_map( array( 'CF7ETM_Submissions', 'csv_cell' ), $row ), ',', '"', '' );
 	}
 
 	/** Installs whichever starter templates are missing. */

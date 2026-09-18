@@ -5,26 +5,30 @@
  * nothing hardcodes a value further down the file.
  */
 
+
 .cf7etm {
 	/* Colour ------------------------------------------------------------ */
-	--cf7etm-primary: #2271b1;
-	--cf7etm-primary-dark: #135e96;
-	--cf7etm-primary-light: #f0f6fc;
-	--cf7etm-success: #00a32a;
-	--cf7etm-success-light: #edfaef;
-	--cf7etm-warning: #dba617;
-	--cf7etm-warning-light: #fcf9e8;
-	--cf7etm-danger: #d63638;
-	--cf7etm-danger-light: #fcf0f1;
+	--cf7etm-primary: #4f46e5;
+	--cf7etm-primary-dark: #4338ca;
+	--cf7etm-primary-light: #eef2ff;
+	--cf7etm-primary-ring: rgba(79, 70, 229, .22);
+	--cf7etm-success: #047857;
+	--cf7etm-success-light: #ecfdf5;
+	--cf7etm-warning: #b45309;
+	--cf7etm-warning-light: #fffbeb;
+	--cf7etm-danger: #b91c1c;
+	--cf7etm-danger-light: #fef2f2;
 
-	--cf7etm-gray-50: #f6f7f7;
-	--cf7etm-gray-100: #f0f0f1;
-	--cf7etm-gray-200: #e0e0e0;
-	--cf7etm-gray-300: #c3c4c7;
-	--cf7etm-gray-500: #8c8f94;
-	--cf7etm-gray-600: #646970;
-	--cf7etm-gray-800: #2c3338;
-	--cf7etm-gray-900: #1d2327;
+	/* Neutrals lean slightly blue so they sit under the accent. Every grey
+	   used for text clears 4.5:1 on white. */
+	--cf7etm-gray-50: #f8fafc;
+	--cf7etm-gray-100: #f1f5f9;
+	--cf7etm-gray-200: #e8ecf3;
+	--cf7etm-gray-300: #cbd5e1;
+	--cf7etm-gray-500: #6b7280;
+	--cf7etm-gray-600: #4b5563;
+	--cf7etm-gray-800: #334155;
+	--cf7etm-gray-900: #0f172a;
 
 	--cf7etm-bg: #fff;
 	--cf7etm-border: var(--cf7etm-gray-200);
@@ -39,6 +43,7 @@
 	--cf7etm-space-5: 20px;
 	--cf7etm-space-6: 24px;
 	--cf7etm-space-8: 32px;
+	--cf7etm-space-10: 40px;
 
 	/* Type -------------------------------------------------------------- */
 	--cf7etm-text-xs: 11px;
@@ -52,17 +57,48 @@
 	--cf7etm-weight-semibold: 600;
 
 	/* Shape ------------------------------------------------------------- */
-	--cf7etm-radius: 4px;
-	--cf7etm-radius-lg: 6px;
-	--cf7etm-shadow-sm: 0 1px 2px rgba(0, 0, 0, .04);
-	--cf7etm-shadow-md: 0 4px 16px rgba(0, 0, 0, .1);
+	--cf7etm-radius: 8px;
+	--cf7etm-radius-lg: 14px;
+	--cf7etm-radius-pill: 999px;
+	--cf7etm-shadow-sm: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .04);
+	--cf7etm-shadow-md: 0 14px 34px -14px rgba(15, 23, 42, .3);
+	--cf7etm-shadow-lg: 0 28px 64px -24px rgba(15, 23, 42, .4);
 
 	color: var(--cf7etm-text);
 	font-size: var(--cf7etm-text-base);
+	-webkit-font-smoothing: antialiased;
 }
 
 .cf7etm * {
 	box-sizing: border-box;
+}
+
+/* Every control on our screens shares one look, including the ones
+   WordPress prints for us: bulk actions, search boxes, filters. */
+.cf7etm input[type="text"],
+.cf7etm input[type="email"],
+.cf7etm input[type="url"],
+.cf7etm input[type="search"],
+.cf7etm input[type="number"],
+.cf7etm select,
+.cf7etm textarea {
+	padding: 6px 12px;
+	border: 1px solid var(--cf7etm-gray-300);
+	border-radius: var(--cf7etm-radius);
+	background-color: var(--cf7etm-bg);
+	color: var(--cf7etm-text);
+	font-size: var(--cf7etm-text-base);
+	line-height: 1.6;
+	box-shadow: none;
+	transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.cf7etm input:focus,
+.cf7etm select:focus,
+.cf7etm textarea:focus {
+	border-color: var(--cf7etm-primary);
+	box-shadow: 0 0 0 3px var(--cf7etm-primary-ring);
+	outline: none;
 }
 
 /* Page header ---------------------------------------------------------- */
@@ -93,21 +129,23 @@
 
 /* Buttons -------------------------------------------------------------- */
 
+
 .cf7etm-btn {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--cf7etm-space-1);
-	padding: 6px 14px;
+	gap: var(--cf7etm-space-2);
+	padding: 7px 14px;
 	border: 1px solid var(--cf7etm-gray-300);
 	border-radius: var(--cf7etm-radius);
 	background: var(--cf7etm-bg);
 	color: var(--cf7etm-gray-800);
 	font-size: var(--cf7etm-text-base);
 	font-weight: var(--cf7etm-weight-medium);
-	line-height: 1.8;
+	line-height: 1.6;
 	text-decoration: none;
 	cursor: pointer;
-	transition: background-color .12s ease, border-color .12s ease;
+	box-shadow: var(--cf7etm-shadow-sm);
+	transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
 }
 
 .cf7etm-btn:hover:not(:disabled) {
@@ -116,24 +154,32 @@
 	color: var(--cf7etm-gray-900);
 }
 
+/* A press should feel like one: the button moves under the pointer. */
+.cf7etm-btn:active:not(:disabled) {
+	transform: translateY(1px);
+	box-shadow: none;
+}
+
 .cf7etm-btn:focus-visible {
 	outline: 2px solid var(--cf7etm-primary);
-	outline-offset: 1px;
+	outline-offset: 2px;
 }
 
 .cf7etm-btn:disabled {
 	opacity: .5;
 	cursor: not-allowed;
+	box-shadow: none;
 }
 
 .cf7etm-btn--primary {
-	background: var(--cf7etm-primary);
-	border-color: var(--cf7etm-primary);
+	background: linear-gradient(180deg, #5b52e8, var(--cf7etm-primary));
+	border-color: var(--cf7etm-primary-dark);
 	color: #fff;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, .12), 0 6px 16px -8px var(--cf7etm-primary-ring);
 }
 
 .cf7etm-btn--primary:hover:not(:disabled) {
-	background: var(--cf7etm-primary-dark);
+	background: linear-gradient(180deg, var(--cf7etm-primary), var(--cf7etm-primary-dark));
 	border-color: var(--cf7etm-primary-dark);
 	color: #fff;
 }
@@ -145,14 +191,15 @@
 }
 
 .cf7etm-btn--danger:hover:not(:disabled) {
-	background: #b32d2e;
-	border-color: #b32d2e;
+	background: #991b1b;
+	border-color: #991b1b;
 	color: #fff;
 }
 
 .cf7etm-btn--small {
-	padding: 2px 10px;
+	padding: 3px 10px;
 	font-size: var(--cf7etm-text-sm);
+	box-shadow: none;
 }
 
 .cf7etm-btn .dashicons {
@@ -166,6 +213,7 @@
 }
 
 /* Cards ---------------------------------------------------------------- */
+
 
 .cf7etm-card {
 	background: var(--cf7etm-bg);
@@ -199,6 +247,7 @@
 	margin: 0;
 	font-size: var(--cf7etm-text-md);
 	font-weight: var(--cf7etm-weight-semibold);
+	letter-spacing: -.01em;
 }
 
 .cf7etm-card__head form {
@@ -223,44 +272,63 @@
 
 /* Stat cards ----------------------------------------------------------- */
 
+
 .cf7etm-stat {
 	margin: 0;
 	display: flex;
 	flex-direction: column;
 	gap: var(--cf7etm-space-1);
+	transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+.cf7etm-stat:hover {
+	border-color: var(--cf7etm-gray-300);
+	box-shadow: var(--cf7etm-shadow-md);
+	transform: translateY(-2px);
 }
 
 .cf7etm-stat__top {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	gap: var(--cf7etm-space-3);
 }
 
+/* The icon reads as an object of its own, not a bullet next to the label. */
 .cf7etm-stat__top .dashicons {
-	width: 20px;
-	height: 20px;
-	font-size: 20px;
-	color: var(--cf7etm-gray-500);
+	width: 34px;
+	height: 34px;
+	font-size: 18px;
+	line-height: 34px;
+	text-align: center;
+	border-radius: var(--cf7etm-radius);
+	background: var(--cf7etm-primary-light);
+	color: var(--cf7etm-primary);
+	flex: none;
 }
 
 .cf7etm-stat__count {
 	font-size: var(--cf7etm-text-2xl);
 	font-weight: var(--cf7etm-weight-semibold);
 	line-height: 1.1;
+	letter-spacing: -.02em;
+	font-variant-numeric: tabular-nums;
 }
 
 .cf7etm-stat__label {
-	margin: 0;
-	font-size: var(--cf7etm-text-md);
+	font-size: var(--cf7etm-text-xs);
 	font-weight: var(--cf7etm-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--cf7etm-text-muted);
 }
 
 .cf7etm-stat p {
-	margin: 0;
-	font-size: var(--cf7etm-text-base);
+	margin: var(--cf7etm-space-2) 0 0;
+	color: var(--cf7etm-text-muted);
 }
 
 .cf7etm-stat__link {
+	display: inline-block;
 	margin-top: var(--cf7etm-space-2);
 	font-size: var(--cf7etm-text-base);
 	font-weight: var(--cf7etm-weight-medium);
@@ -269,29 +337,32 @@
 
 /* Badges — never colour alone; the label carries the meaning ----------- */
 
+
 .cf7etm-badge {
 	display: inline-block;
-	padding: 1px 8px;
-	border-radius: 10px;
+	padding: 2px 10px;
+	border-radius: var(--cf7etm-radius-pill);
 	font-size: var(--cf7etm-text-xs);
 	font-weight: var(--cf7etm-weight-semibold);
 	line-height: 1.7;
+	letter-spacing: .02em;
 	white-space: nowrap;
+	box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .06);
 }
 
 .cf7etm-badge--success {
 	background: var(--cf7etm-success-light);
-	color: #007017;
+	color: var(--cf7etm-success);
 }
 
 .cf7etm-badge--warning {
 	background: var(--cf7etm-warning-light);
-	color: #8a6607;
+	color: var(--cf7etm-warning);
 }
 
 .cf7etm-badge--danger {
 	background: var(--cf7etm-danger-light);
-	color: #b32d2e;
+	color: var(--cf7etm-danger);
 }
 
 .cf7etm-badge--info {
@@ -306,14 +377,16 @@
 
 /* Alerts --------------------------------------------------------------- */
 
+
 .cf7etm-alert {
-	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
+	/* Some alerts are spans inside a field; they still lay out as blocks. */
+	display: block;
+	padding: var(--cf7etm-space-4) var(--cf7etm-space-5);
 	border: 1px solid var(--cf7etm-border);
-	border-left-width: 3px;
+	border-left-width: 4px;
 	border-radius: var(--cf7etm-radius);
-	background: var(--cf7etm-gray-50);
-	margin-bottom: var(--cf7etm-space-4);
-	font-size: var(--cf7etm-text-base);
+	margin-bottom: var(--cf7etm-space-5);
+	box-shadow: var(--cf7etm-shadow-sm);
 }
 
 .cf7etm-alert p {
@@ -346,6 +419,7 @@
 
 /* Form controls -------------------------------------------------------- */
 
+
 .cf7etm-field {
 	display: block;
 	margin: 0 0 var(--cf7etm-space-4);
@@ -368,21 +442,23 @@
 .cf7etm-field textarea {
 	width: 100%;
 	max-width: 100%;
-	padding: 6px 10px;
+	padding: 7px 12px;
 	border: 1px solid var(--cf7etm-gray-300);
 	border-radius: var(--cf7etm-radius);
 	background: var(--cf7etm-bg);
-	font-size: var(--cf7etm-text-md);
-	line-height: 1.5;
+	font-size: var(--cf7etm-text-base);
+	line-height: 1.6;
+	color: var(--cf7etm-text);
 	box-shadow: none;
+	transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 .cf7etm-field input:focus,
 .cf7etm-field select:focus,
 .cf7etm-field textarea:focus {
 	border-color: var(--cf7etm-primary);
-	outline: 2px solid transparent;
-	box-shadow: 0 0 0 1px var(--cf7etm-primary);
+	box-shadow: 0 0 0 3px var(--cf7etm-primary-ring);
+	outline: none;
 }
 
 .cf7etm-field--check > label {
@@ -403,8 +479,8 @@
 .cf7etm-help code {
 	font-size: var(--cf7etm-text-xs);
 	background: var(--cf7etm-gray-100);
-	padding: 1px 4px;
-	border-radius: 3px;
+	padding: 1px 5px;
+	border-radius: 4px;
 }
 
 .cf7etm-muted {
@@ -451,6 +527,7 @@
 
 /* Tables --------------------------------------------------------------- */
 
+
 .cf7etm-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -460,16 +537,23 @@
 .cf7etm-table th,
 .cf7etm-table td {
 	padding: var(--cf7etm-space-3) var(--cf7etm-space-5);
+	border-bottom: 1px solid var(--cf7etm-border);
 	text-align: left;
-	border-bottom: 1px solid var(--cf7etm-gray-100);
-	vertical-align: top;
+	vertical-align: middle;
 }
 
 .cf7etm-table thead th {
-	background: var(--cf7etm-gray-50);
+	font-size: var(--cf7etm-text-xs);
 	font-weight: var(--cf7etm-weight-semibold);
-	color: var(--cf7etm-gray-800);
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--cf7etm-text-muted);
+	background: var(--cf7etm-gray-50);
 	white-space: nowrap;
+}
+
+.cf7etm-table tbody tr:hover td {
+	background: var(--cf7etm-gray-50);
 }
 
 .cf7etm-table tbody tr:last-child td {
@@ -479,6 +563,7 @@
 .cf7etm-table--plain th,
 .cf7etm-table--plain td {
 	padding: var(--cf7etm-space-2) 0;
+	border-bottom: 1px solid var(--cf7etm-border);
 }
 
 .cf7etm-table--plain th {
@@ -490,6 +575,7 @@
 
 /* WP_List_Table, restyled to match ------------------------------------- */
 
+
 .cf7etm-list .wp-list-table {
 	border: 0;
 	box-shadow: none;
@@ -497,43 +583,75 @@
 
 .cf7etm-list .wp-list-table thead th,
 .cf7etm-list .wp-list-table thead td {
-	background: var(--cf7etm-gray-50);
+	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
 	border-bottom: 1px solid var(--cf7etm-border);
+	background: var(--cf7etm-gray-50);
+	font-size: var(--cf7etm-text-xs);
 	font-weight: var(--cf7etm-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--cf7etm-text-muted);
 }
 
 .cf7etm-list .wp-list-table td,
 .cf7etm-list .wp-list-table th {
-	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
+	padding: var(--cf7etm-space-4);
+	vertical-align: middle;
 }
 
+.cf7etm-list .wp-list-table tbody tr:hover > td,
+.cf7etm-list .wp-list-table tbody tr:hover > th {
+	background: var(--cf7etm-gray-50);
+}
+
+/* The view filters read as one switchable set, not a run of links. */
 .cf7etm-list .subsubsub {
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--cf7etm-space-3);
+	gap: var(--cf7etm-space-1);
 	margin: 0;
-	padding: var(--cf7etm-space-4) var(--cf7etm-space-5) 0;
+	padding: var(--cf7etm-space-4) var(--cf7etm-space-4) 0;
 	float: none;
 }
 
 .cf7etm-list .subsubsub li {
 	margin: 0;
+	color: transparent;
 }
 
 .cf7etm-list .subsubsub li::after {
 	content: none;
 }
 
+.cf7etm-list .subsubsub a {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: var(--cf7etm-radius-pill);
+	color: var(--cf7etm-text-muted);
+	text-decoration: none;
+	transition: background-color .15s ease, color .15s ease;
+}
+
+.cf7etm-list .subsubsub a:hover {
+	background: var(--cf7etm-gray-100);
+	color: var(--cf7etm-gray-900);
+}
+
+.cf7etm-list .subsubsub a.current {
+	background: var(--cf7etm-primary-light);
+	color: var(--cf7etm-primary-dark);
+	font-weight: var(--cf7etm-weight-semibold);
+}
+
 .cf7etm-list .search-box {
-	float: none;
+	padding: var(--cf7etm-space-4);
 	display: flex;
 	gap: var(--cf7etm-space-2);
-	padding: var(--cf7etm-space-3) var(--cf7etm-space-5) var(--cf7etm-space-4);
-	margin: 0;
+	float: none;
 }
 
 .cf7etm-list .tablenav {
-	padding: var(--cf7etm-space-2) var(--cf7etm-space-5);
+	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
 	margin: 0;
 	height: auto;
 }
@@ -548,30 +666,79 @@
 	text-decoration: none;
 }
 
+/* WordPress prints its own buttons into these screens — search, bulk
+   actions, pagination. They should not look like a different product. */
+.cf7etm .button,
+.cf7etm .button-secondary {
+	padding: 6px 14px;
+	height: auto;
+	border: 1px solid var(--cf7etm-gray-300);
+	border-radius: var(--cf7etm-radius);
+	background: var(--cf7etm-bg);
+	color: var(--cf7etm-gray-800);
+	font-size: var(--cf7etm-text-base);
+	font-weight: var(--cf7etm-weight-medium);
+	line-height: 1.6;
+	box-shadow: var(--cf7etm-shadow-sm);
+}
+
+.cf7etm .button:hover,
+.cf7etm .button-secondary:hover {
+	border-color: var(--cf7etm-gray-500);
+	background: var(--cf7etm-gray-50);
+	color: var(--cf7etm-gray-900);
+}
+
+.cf7etm .button-primary {
+	padding: 6px 14px;
+	height: auto;
+	border: 1px solid var(--cf7etm-primary-dark);
+	border-radius: var(--cf7etm-radius);
+	background: var(--cf7etm-primary);
+	color: #fff;
+	font-weight: var(--cf7etm-weight-medium);
+	line-height: 1.6;
+}
+
+.cf7etm .button:focus,
+.cf7etm .button-primary:focus {
+	border-color: var(--cf7etm-primary);
+	box-shadow: 0 0 0 3px var(--cf7etm-primary-ring);
+	outline: none;
+}
+
 /* Empty states --------------------------------------------------------- */
+
 
 .cf7etm-empty {
 	text-align: center;
-	padding: var(--cf7etm-space-8) var(--cf7etm-space-5);
+	padding: var(--cf7etm-space-10) var(--cf7etm-space-5);
 	background: var(--cf7etm-bg);
-	border: 1px dashed var(--cf7etm-gray-300);
+	border: 1px solid var(--cf7etm-border);
 	border-radius: var(--cf7etm-radius-lg);
+	box-shadow: var(--cf7etm-shadow-sm);
+	margin-bottom: var(--cf7etm-space-5);
 }
 
 .cf7etm-empty--inline {
 	border: 0;
-	padding: var(--cf7etm-space-6) var(--cf7etm-space-5);
+	box-shadow: none;
+	margin: 0;
 }
 
 .cf7etm-empty .dashicons {
-	width: 40px;
-	height: 40px;
-	font-size: 40px;
-	color: var(--cf7etm-gray-300);
+	width: 56px;
+	height: 56px;
+	font-size: 28px;
+	line-height: 56px;
+	border-radius: var(--cf7etm-radius-pill);
+	background: var(--cf7etm-primary-light);
+	color: var(--cf7etm-primary);
+	margin-bottom: var(--cf7etm-space-4);
 }
 
 .cf7etm-empty h2 {
-	margin: var(--cf7etm-space-3) 0 var(--cf7etm-space-1);
+	margin: 0 0 var(--cf7etm-space-2);
 	font-size: var(--cf7etm-text-lg);
 	font-weight: var(--cf7etm-weight-semibold);
 }
@@ -598,10 +765,11 @@
 	justify-content: space-between;
 	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
 	margin: var(--cf7etm-space-4) 0;
-	background: var(--cf7etm-bg);
+	background: rgba(255, 255, 255, .85);
+	backdrop-filter: blur(10px);
 	border: 1px solid var(--cf7etm-border);
 	border-radius: var(--cf7etm-radius-lg);
-	box-shadow: var(--cf7etm-shadow-sm);
+	box-shadow: var(--cf7etm-shadow-md);
 }
 
 .cf7etm-editor__identity {
@@ -680,7 +848,7 @@
 .cf7etm-panel__head {
 	padding: var(--cf7etm-space-3) var(--cf7etm-space-4);
 	border-bottom: 1px solid var(--cf7etm-border);
-	background: var(--cf7etm-gray-50);
+	background: var(--cf7etm-bg);
 }
 
 .cf7etm-panel__head h2 {
@@ -735,6 +903,7 @@
 	border-radius: var(--cf7etm-radius);
 	background: var(--cf7etm-bg);
 	overflow: hidden;
+	transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 .cf7etm-tag:hover {
@@ -871,7 +1040,8 @@
 	align-items: center;
 	justify-content: center;
 	padding: var(--cf7etm-space-5);
-	background: rgba(0, 0, 0, .5);
+	background: rgba(15, 23, 42, .55);
+	backdrop-filter: blur(4px);
 }
 
 .cf7etm-modal__box {
@@ -882,7 +1052,7 @@
 	max-height: 90vh;
 	background: #fff;
 	border-radius: var(--cf7etm-radius-lg);
-	box-shadow: var(--cf7etm-shadow-md);
+	box-shadow: var(--cf7etm-shadow-lg);
 	overflow: hidden;
 }
 
@@ -1226,6 +1396,13 @@
 	border: 1px solid var(--cf7etm-border);
 	border-radius: var(--cf7etm-radius-lg);
 	background: var(--cf7etm-bg);
+	box-shadow: var(--cf7etm-shadow-sm);
+	transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.cf7etm-block:hover {
+	border-color: var(--cf7etm-gray-300);
+	box-shadow: var(--cf7etm-shadow-md);
 }
 
 .cf7etm-block__placeholder {
@@ -1348,6 +1525,7 @@
 /* A class-level display rule outranks the hidden attribute; restore it. */
 .cf7etm-modes[hidden],
 .cf7etm-builder[hidden],
+.cf7etm-alert[hidden],
 .cf7etm-block__field[hidden] {
 	display: none;
 }
@@ -1409,4 +1587,39 @@
 .cf7etm-entry__value {
 	white-space: pre-wrap;
 	word-break: break-word;
+}
+
+/* Expandable submission row ------------------------------------------- */
+
+.cf7etm-entry__row[hidden] {
+	display: none;
+}
+
+.cf7etm-entry__row > td {
+	padding: 0 !important;
+	background: var(--cf7etm-gray-50);
+	border-bottom: 1px solid var(--cf7etm-border);
+}
+
+.cf7etm-entry__row .cf7etm-entry {
+	background: var(--cf7etm-bg);
+}
+
+.cf7etm-entry__row .cf7etm-entry td,
+.cf7etm-entry__row .cf7etm-entry th {
+	white-space: normal;
+}
+
+.cf7etm-entry__row .cf7etm-muted {
+	display: block;
+	padding: var(--cf7etm-space-4);
+}
+
+/* The chevron points the way the row will move. */
+[data-cf7etm-entry-toggle] .dashicons {
+	transition: transform .15s ease;
+}
+
+[data-cf7etm-entry-toggle].is-open .dashicons {
+	transform: rotate(180deg);
 }

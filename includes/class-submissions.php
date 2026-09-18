@@ -115,6 +115,8 @@ class CF7ETM_Submissions {
 			return;
 		}
 
+		$uploads = (array) $submission->uploaded_files();
+
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- our own table.
@@ -124,8 +126,8 @@ class CF7ETM_Submissions {
 				'form_id'      => $contact_form->id(),
 				'form_title'   => $contact_form->title(),
 				'status'       => 'mail_sent' === $status ? 'sent' : 'failed',
-				'fields'       => (string) wp_json_encode( self::posted_fields( $submission ) ),
-				'files'        => (string) wp_json_encode( self::store_files( $submission->uploaded_files() ) ),
+				'fields'       => (string) wp_json_encode( self::posted_fields( $submission, $uploads ) ),
+				'files'        => (string) wp_json_encode( self::store_files( $uploads ) ),
 				'remote_ip'    => (string) $submission->get_meta( 'remote_ip' ),
 				'submitted_at' => current_time( 'mysql' ),
 			),
@@ -137,14 +139,24 @@ class CF7ETM_Submissions {
 	 * The visitor's own answers, without Contact Form 7's internal fields.
 	 *
 	 * @param WPCF7_Submission $submission Live submission.
+	 * @param array            $uploads    Upload fields, which are recorded separately.
 	 * @return array Field name => value.
 	 */
-	private static function posted_fields( $submission ) {
+	private static function posted_fields( $submission, $uploads = array() ) {
 		$fields = array();
 
 		foreach ( (array) $submission->get_posted_data() as $name => $value ) {
 			// _wpcf7, _wpcf7_unit_tag and friends are plumbing, not answers.
 			if ( ! is_string( $name ) || str_starts_with( $name, '_' ) ) {
+				continue;
+			}
+
+			/*
+			 * Contact Form 7 puts its own digest of the file in the posted
+			 * data for an upload field. It is not an answer anyone can read,
+			 * and the file itself is kept in the files column.
+			 */
+			if ( array_key_exists( $name, $uploads ) ) {
 				continue;
 			}
 
@@ -308,6 +320,22 @@ class CF7ETM_Submissions {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * The readable answers on a submission: everything except the fields
+	 * that hold an upload, which are shown as files instead.
+	 *
+	 * Older rows kept Contact Form 7 own file digest as the value, so this
+	 * filters them out on the way to the screen as well.
+	 *
+	 * @param array $entry Submission.
+	 * @return array Field name => value.
+	 */
+	public static function answers( $entry ) {
+		$files = (array) ( $entry['files'] ?? array() );
+
+		return array_diff_key( (array) ( $entry['fields'] ?? array() ), $files );
 	}
 
 	/**
@@ -588,6 +616,22 @@ class CF7ETM_Submissions {
 		}
 
 		return $columns;
+	}
+
+	/**
+	 * One CSV cell, made safe for spreadsheets.
+	 *
+	 * Excel and Google Sheets treat a cell opening with =, +, - or @ as a
+	 * formula, which turns an exported answer into something that runs. A
+	 * leading apostrophe keeps it plain text.
+	 *
+	 * @param mixed $cell Cell value.
+	 * @return string
+	 */
+	public static function csv_cell( $cell ) {
+		$cell = (string) $cell;
+
+		return preg_match( '/^[=+\-@\t\r]/', $cell ) ? "'" . $cell : $cell;
 	}
 
 	/**

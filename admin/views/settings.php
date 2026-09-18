@@ -71,7 +71,7 @@ $settings = CF7ETM_Plugin::settings();
 				</p>
 
 				<p class="cf7etm-help">
-					<?php esc_html_e( 'This plugin never stores, copies or serves an uploaded file, and never puts a file path or a download link in an email. Contact Form 7 removes uploaded files shortly after sending, so the attachment is the copy that lasts.', 'cf7-email-template-manager' ); ?>
+					<?php esc_html_e( 'Contact Form 7 removes an uploaded file shortly after sending, so each submission keeps its own copy under Submissions. Those copies are closed to the web and only reachable through a download link in the admin. A file path or download link is never put in an email.', 'cf7-email-template-manager' ); ?>
 				</p>
 			</div>
 
