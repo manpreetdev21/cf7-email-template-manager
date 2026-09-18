@@ -562,7 +562,7 @@ class CF7ETM_Admin {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
 		$form_id = absint( $_REQUEST['form'] ?? 0 );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
-		$status = sanitize_key( $_REQUEST['status'] ?? '' );
+		$status = sanitize_key( wp_unslash( $_REQUEST['status'] ?? '' ) );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified above.
 		$search = sanitize_text_field( wp_unslash( $_REQUEST['s'] ?? '' ) );
 
@@ -607,6 +607,7 @@ class CF7ETM_Admin {
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename=cf7-submissions-' . $name . '-' . gmdate( 'Y-m-d' ) . '.csv' );
+		header( 'X-Content-Type-Options: nosniff' );
 
 		$out = fopen( 'php://output', 'w' );
 
@@ -734,6 +735,7 @@ class CF7ETM_Admin {
 		nocache_headers();
 		header( 'Content-Type: application/json; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename=cf7-email-templates-' . gmdate( 'Y-m-d' ) . '.json' );
+		header( 'X-Content-Type-Options: nosniff' );
 
 		echo wp_json_encode( $payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		exit;

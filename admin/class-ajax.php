@@ -45,7 +45,7 @@ class CF7ETM_Ajax {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
-		$action = str_replace( 'cf7etm_', '', sanitize_key( $_REQUEST['action'] ?? '' ) );
+		$action = str_replace( 'cf7etm_', '', sanitize_key( wp_unslash( $_REQUEST['action'] ?? '' ) ) );
 
 		if ( ! isset( self::ACTIONS[ $action ] ) ) {
 			wp_send_json_error( array( 'message' => __( 'Unknown request.', 'cf7-email-template-manager' ) ), 400 );
