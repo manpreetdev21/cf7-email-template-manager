@@ -144,6 +144,7 @@ $status_modifier = match ( $template['status'] ) {
 							<?php require CF7ETM_DIR . 'admin/views/partial-tag.php'; ?>
 						<?php endforeach; ?>
 					</div>
+					<p class="cf7etm-help"><?php esc_html_e( 'Tags starting [_user_ are filled in only when the visitor is logged in; otherwise they come through empty.', 'cf7-email-template-manager' ); ?></p>
 				</div>
 
 				<div class="cf7etm-tags__group">

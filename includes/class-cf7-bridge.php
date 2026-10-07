@@ -481,7 +481,18 @@ class CF7ETM_CF7_Bridge {
 			'_post_title'         => __( 'Post Title', 'cf7-email-template-manager' ),
 			'_post_url'           => __( 'Post URL', 'cf7-email-template-manager' ),
 			'_post_author'        => __( 'Post Author', 'cf7-email-template-manager' ),
+			'_post_author_email'  => __( 'Post Author Email', 'cf7-email-template-manager' ),
+			'_post_id'            => __( 'Post ID', 'cf7-email-template-manager' ),
+			'_post_name'          => __( 'Post Slug', 'cf7-email-template-manager' ),
 			'_invalid_fields'     => __( 'Invalid Field Count', 'cf7-email-template-manager' ),
+			// Contact Form 7 fills these in only when the visitor is logged in.
+			'_user_login'         => __( 'Username', 'cf7-email-template-manager' ),
+			'_user_email'         => __( 'User Email', 'cf7-email-template-manager' ),
+			'_user_display_name'  => __( 'User Display Name', 'cf7-email-template-manager' ),
+			'_user_first_name'    => __( 'User First Name', 'cf7-email-template-manager' ),
+			'_user_last_name'     => __( 'User Last Name', 'cf7-email-template-manager' ),
+			'_user_nickname'      => __( 'User Nickname', 'cf7-email-template-manager' ),
+			'_user_url'           => __( 'User Website', 'cf7-email-template-manager' ),
 		);
 	}
 

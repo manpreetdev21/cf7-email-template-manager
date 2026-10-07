@@ -730,6 +730,41 @@ foreach ( array( '=1+1', '+1', '-1', '@SUM(A1)', "\tcmd", "\rcmd" ) as $risky ) 
 cf7etm_check( 'An ordinary answer is left alone', 'Jane Tester' === CF7ETM_Submissions::csv_cell( 'Jane Tester' ) );
 cf7etm_check( 'An email address is left alone', 'jane@example.com' === CF7ETM_Submissions::csv_cell( 'jane@example.com' ) );
 
+/*
+ * Contact Form 7 compatibility. These are the pieces of CF7's API this plugin
+ * leans on; if an upgrade moves one, this is where it shows up first.
+ */
+cf7etm_check( 'CF7 is new enough', version_compare( WPCF7_VERSION, CF7ETM_Plugin::MIN_CF7, '>=' ), 'CF7 ' . WPCF7_VERSION );
+
+foreach ( array( 'scan_form_tags', 'collect_mail_tags', 'prop', 'set_properties', 'title', 'id' ) as $method ) {
+	cf7etm_check( 'WPCF7_ContactForm::' . $method . '() exists', method_exists( 'WPCF7_ContactForm', $method ) );
+}
+
+foreach ( array( 'get_posted_data', 'uploaded_files', 'get_meta' ) as $method ) {
+	cf7etm_check( 'WPCF7_Submission::' . $method . '() exists', method_exists( 'WPCF7_Submission', $method ) );
+}
+
+cf7etm_check( 'wpcf7_is_name() exists', function_exists( 'wpcf7_is_name' ) );
+cf7etm_check( 'File tag types still discoverable', array() !== CF7ETM_CF7_Bridge::file_tag_types(), implode( ', ', CF7ETM_CF7_Bridge::file_tag_types() ) );
+
+// A full HTML document must not be wrapped a second time by CF7.
+cf7etm_check(
+	'CF7 still leaves a complete HTML document alone',
+	1 === preg_match( '%<html[>\s].*</html>%is', '<!doctype html><html><body>x</body></html>' )
+		&& 0 === preg_match( '%<html[>\s].*</html>%is', '<p>partial</p>' )
+);
+
+// Every tag offered in the sidebar needs a sample value, or Preview shows the raw tag.
+$sample_specials = CF7ETM_Renderer::sample_values( $form_id );
+
+foreach ( array_keys( CF7ETM_CF7_Bridge::special_tags() ) as $special ) {
+	if ( str_ends_with( $special, '_' ) ) {
+		continue; // A prefix, not a tag of its own.
+	}
+
+	cf7etm_check( 'Preview has a sample for [' . $special . ']', isset( $sample_specials[ $special ] ) );
+}
+
 /* -------------------------------------------------------------------------
  * Clean up
  * ---------------------------------------------------------------------- */

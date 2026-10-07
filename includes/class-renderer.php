@@ -178,7 +178,18 @@ class CF7ETM_Renderer {
 			'_post_title'         => __( 'Sample Page', 'cf7-email-template-manager' ),
 			'_post_url'           => home_url( '/contact/' ),
 			'_post_author'        => __( 'Site Editor', 'cf7-email-template-manager' ),
+			'_post_author_email'  => get_option( 'admin_email' ),
+			'_post_id'            => '42',
+			'_post_name'          => 'sample-page',
 			'_invalid_fields'     => '0',
+			// Empty in a real email unless the visitor was logged in.
+			'_user_login'         => 'jsmith',
+			'_user_email'         => 'john@example.com',
+			'_user_display_name'  => 'John Smith',
+			'_user_first_name'    => 'John',
+			'_user_last_name'     => 'Smith',
+			'_user_nickname'      => 'jsmith',
+			'_user_url'           => home_url( '/' ),
 		);
 
 		return array_merge( $specials, $values );

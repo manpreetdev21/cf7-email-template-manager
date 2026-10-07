@@ -4,9 +4,9 @@ Reusable, brandable email templates for Contact Form 7 — design once, assign t
 
 | | |
 |---|---|
-| **Version** | 1.4.0 |
+| **Version** | 1.4.1 |
 | **Requires** | WordPress 6.4+, PHP 8.1+, Contact Form 7 5.8+ |
-| **Tested up to** | WordPress 7.1 |
+| **Tested up to** | WordPress 7.1, Contact Form 7 6.2 |
 | **License** | GPL-2.0-or-later |
 
 ---
@@ -35,6 +35,7 @@ Contact Form 7 keeps doing what it does best — rendering, validating and submi
 - Click-to-insert tags with friendly names, search and a recently-used list
 - A warning when a template uses a tag the form does not have — nothing is ever removed for you
 - A notice when a form gains new fields the template is not using yet
+- All of Contact Form 7 special mail-tags, including the `[_user_*]` set for logged-in visitors
 - File upload fields are detected, and the uploaded file is attached to the email
 
 ### Submissions
@@ -107,6 +108,11 @@ Almost always because the logo URL points at a host the recipient cannot reach �
 Templates, submissions and stored files all stay. They are only removed if you tick **Delete all plugin data** in Settings → Advanced first.
 
 ## Changelog
+
+### 1.4.1
+- Checked against Contact Form 7 6.2. Nothing this plugin relies on has changed: the properties filter, the submission API, the mail property keys and the rule that leaves a complete HTML document unwrapped all behave as before.
+- Added the special mail-tags CF7 supports that the sidebar was not offering: `[_post_id]`, `[_post_name]`, `[_post_author_email]` and the seven `[_user_*]` tags, each with sample data for Preview.
+- New compatibility checks in the smoke test, so a future CF7 release that moves one of these shows up immediately.
 
 ### 1.4.0
 - New **Export CSV** button on the Submissions screen. It exports every row the current form, email-result and search filters match, with one column per field and the uploaded file names.
