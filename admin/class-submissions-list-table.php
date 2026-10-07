@@ -231,7 +231,7 @@ class CF7ETM_Submissions_List_Table extends WP_List_Table {
 		CF7ETM_Plugin::require_cap();
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- checked immediately above.
-		CF7ETM_Submissions::delete( (array) ( $_REQUEST['entry'] ?? array() ) );
+		CF7ETM_Submissions::delete( array_map( 'absint', (array) wp_unslash( $_REQUEST['entry'] ?? array() ) ) );
 	}
 
 	/**

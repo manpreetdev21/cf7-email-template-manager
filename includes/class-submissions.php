@@ -456,7 +456,7 @@ class CF7ETM_Submissions {
 		$offset   = max( 0, (int) $args['page'] - 1 ) * $per_page;
 		$table    = self::table();
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery -- table name and ordering come from whitelists above.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table name and ordering come from whitelists above.
 		$count_sql = "SELECT COUNT(*) FROM $table WHERE $clause";
 		$list_sql  = "SELECT * FROM $table WHERE $clause ORDER BY $orderby $order LIMIT %d OFFSET %d";
 
@@ -467,7 +467,7 @@ class CF7ETM_Submissions {
 		$rows = $wpdb->get_results(
 			$wpdb->prepare( $list_sql, array_merge( $params, array( $per_page, $offset ) ) )
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		return array(
 			'items' => array_map( array( __CLASS__, 'shape' ), (array) $rows ),
@@ -486,7 +486,7 @@ class CF7ETM_Submissions {
 
 		$table = self::table();
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- own table, ID is prepared.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- own table, ID is prepared.
 		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", (int) $id ) );
 
 		return $row ? self::shape( $row ) : null;
@@ -538,7 +538,7 @@ class CF7ETM_Submissions {
 		$table        = self::table();
 		$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- own table, IDs are prepared.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- own table; the IN list is %d placeholders built from absint-ed IDs.
 		return (int) $wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id IN ($placeholders)", $ids ) );
 	}
 
@@ -554,11 +554,12 @@ class CF7ETM_Submissions {
 
 		$table = self::table();
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- own table, no user input.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- own table, no user input.
 		$rows = $wpdb->get_results(
 			"SELECT form_id, MAX(form_title) AS form_title, COUNT(*) AS total, MAX(submitted_at) AS last_at
 			 FROM $table GROUP BY form_id ORDER BY last_at DESC"
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		$forms = array();
 
@@ -584,11 +585,11 @@ class CF7ETM_Submissions {
 		$table = self::table();
 
 		if ( $form_id ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- own table, ID is prepared.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- own table, ID is prepared.
 			return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table WHERE form_id = %d", (int) $form_id ) );
 		}
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- own table, no user input.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter -- own table, no user input.
 		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table" );
 	}
 

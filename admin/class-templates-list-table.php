@@ -144,7 +144,7 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only ordering.
 		$orderby = isset( $_REQUEST['orderby'] ) ? sanitize_key( wp_unslash( $_REQUEST['orderby'] ) ) : 'modified';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only ordering.
-		$order = ( isset( $_REQUEST['order'] ) && 'asc' === strtolower( wp_unslash( $_REQUEST['order'] ) ) ) ? 'ASC' : 'DESC';
+		$order = ( isset( $_REQUEST['order'] ) && 'asc' === strtolower( sanitize_key( wp_unslash( $_REQUEST['order'] ) ) ) ) ? 'ASC' : 'DESC';
 
 		$args = array(
 			'post_type'      => CF7ETM_Template_Post_Type::POST_TYPE,
@@ -167,8 +167,9 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 
 			case 'html':
 			case 'text':
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 				$args['meta_key']   = '_cf7etm_type';
-				$args['meta_value'] = $filter;
+				$args['meta_value'] = $filter; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 				break;
 
 			case 'assigned':
@@ -178,17 +179,20 @@ class CF7ETM_Templates_List_Table extends WP_List_Table {
 
 			case 'unused':
 				if ( $assigned ) {
+					// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- the exclusion list is the handful of assigned templates.
 					$args['post__not_in'] = $assigned;
 				}
 				break;
 
 			case 'files':
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 				$args['meta_key']   = '_cf7etm_has_files';
-				$args['meta_value'] = 1;
+				$args['meta_value'] = 1; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 				break;
 
 			case 'nofiles':
 				// Templates saved before the flag existed have no row at all.
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- an admin-only filter over a small, indexed set of templates.
 				$args['meta_query'] = array(
 					'relation' => 'OR',
 					array(

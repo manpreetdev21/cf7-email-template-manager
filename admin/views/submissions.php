@@ -83,7 +83,9 @@ $cf7etm_entry = $cf7etm_entry_id ? CF7ETM_Submissions::get( $cf7etm_entry_id ) :
 			array(
 				'action' => 'cf7etm_export_entries',
 				'form'   => $cf7etm_table->current_form(),
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter, carried into the export link.
 				'status' => isset( $_REQUEST['status'] ) ? sanitize_key( wp_unslash( $_REQUEST['status'] ) ) : '',
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter, carried into the export link.
 				's'      => isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : '',
 			),
 			static fn( $value ) => '' !== $value && 0 !== $value

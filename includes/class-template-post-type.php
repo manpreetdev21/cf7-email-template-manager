@@ -388,8 +388,9 @@ class CF7ETM_Template_Post_Type {
 				'post_status'    => array( 'publish', 'draft', 'private' ),
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 				'meta_key'       => '_cf7etm_type',
-				'meta_value'     => $type,
+				'meta_value'     => $type, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 			)
 		);
 
@@ -408,8 +409,9 @@ class CF7ETM_Template_Post_Type {
 				'post_status'    => array( 'publish', 'draft', 'private' ),
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 				'meta_key'       => '_cf7etm_has_files',
-				'meta_value'     => 1,
+				'meta_value'     => 1, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- an admin-only filter over a small, indexed set of templates.
 			)
 		);
 

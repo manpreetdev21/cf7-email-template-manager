@@ -19,12 +19,11 @@ class CF7ETM_Plugin {
 	 * Loads the plugin once WordPress and Contact Form 7 are available.
 	 */
 	public static function boot() {
-		load_plugin_textdomain(
-			'cf7-email-template-manager',
-			false,
-			dirname( plugin_basename( CF7ETM_FILE ) ) . '/languages'
-		);
-
+		/*
+		 * Translations load themselves. Since WordPress 4.6 the Text Domain and
+		 * Domain Path headers are enough, and calling load_plugin_textdomain()
+		 * here would only run earlier than the strings are needed.
+		 */
 		if ( ! self::cf7_supported() ) {
 			add_action( 'admin_notices', array( __CLASS__, 'render_requirement_notice' ) );
 			return;

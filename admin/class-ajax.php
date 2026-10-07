@@ -92,7 +92,7 @@ class CF7ETM_Ajax {
 	 * @return int
 	 */
 	private static function posted_form_id() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in dispatch().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- verified in dispatch().
 		return absint( $_REQUEST['form_id'] ?? 0 );
 	}
 
@@ -102,7 +102,7 @@ class CF7ETM_Ajax {
 	 * @return int
 	 */
 	private static function posted_template_id() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in dispatch().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- verified in dispatch().
 		return absint( $_REQUEST['template_id'] ?? 0 );
 	}
 
@@ -206,7 +206,7 @@ class CF7ETM_Ajax {
 	public static function send_test() {
 		$input = self::posted_template();
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in dispatch().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- verified in dispatch().
 		$recipient = sanitize_email( wp_unslash( $_POST['recipient'] ?? '' ) );
 
 		if ( ! $recipient ) {
@@ -236,7 +236,7 @@ class CF7ETM_Ajax {
 
 	/** Assigns a template to a form slot. */
 	public static function assign() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in dispatch().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- verified in dispatch().
 		$slot = sanitize_key( $_REQUEST['slot'] ?? '' );
 
 		$result = CF7ETM_CF7_Bridge::assign( self::posted_form_id(), $slot, self::posted_template_id() );
@@ -250,7 +250,7 @@ class CF7ETM_Ajax {
 
 	/** Detaches a template from a form slot. */
 	public static function detach() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified in dispatch().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- verified in dispatch().
 		$slot = sanitize_key( $_REQUEST['slot'] ?? '' );
 
 		CF7ETM_CF7_Bridge::detach( self::posted_form_id(), $slot );

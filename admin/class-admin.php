@@ -124,7 +124,7 @@ class CF7ETM_Admin {
 		);
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the nonce is checked below.
-		if ( 'delete' !== ( $_GET['entry_action'] ?? '' ) ) {
+		if ( 'delete' !== sanitize_key( wp_unslash( $_GET['entry_action'] ?? '' ) ) ) {
 			return;
 		}
 
@@ -523,7 +523,7 @@ class CF7ETM_Admin {
 	public static function handle_save_branding() {
 		self::verify( 'cf7etm_save_branding' );
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each field is sanitized in CF7ETM_Branding::save().
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- each field is sanitized in CF7ETM_Branding::save(); nonce checked in self::verify() above.
 		CF7ETM_Branding::save( wp_unslash( (array) ( $_POST['branding'] ?? array() ) ) );
 
 		self::redirect( 'branding', 'branding_saved' );
@@ -533,7 +533,7 @@ class CF7ETM_Admin {
 	public static function handle_save_settings() {
 		self::verify( 'cf7etm_save_settings' );
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized field by field below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- sanitized field by field below; nonce checked in self::verify() above.
 		$input = wp_unslash( (array) ( $_POST['settings'] ?? array() ) );
 
 		$clean = array(
@@ -745,11 +745,12 @@ class CF7ETM_Admin {
 	public static function handle_import() {
 		self::verify( 'cf7etm_import' );
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce checked in self::verify(); is_uploaded_file() is the validation that matters for a temp path.
 		if ( empty( $_FILES['import_file']['tmp_name'] ) || ! is_uploaded_file( $_FILES['import_file']['tmp_name'] ) ) {
 			self::redirect( 'tools', 'import_failed' );
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- server-side temp path from $_FILES.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- server-side temp path from $_FILES; nonce checked in self::verify() above.
 		$raw = file_get_contents( $_FILES['import_file']['tmp_name'] );
 
 		$data = json_decode( (string) $raw, true );
