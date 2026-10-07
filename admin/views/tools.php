@@ -7,9 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$log      = array_reverse( (array) get_option( 'cf7etm_log', array() ) );
-$counts   = CF7ETM_Template_Post_Type::counts();
-$debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
+$cf7etm_log      = array_reverse( (array) get_option( 'cf7etm_log', array() ) );
+$cf7etm_counts   = CF7ETM_Template_Post_Type::counts();
+$cf7etm_debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 ?>
 <div class="wrap cf7etm">
 
@@ -39,15 +39,15 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 				<?php
 				printf(
 					/* translators: %d: number of templates */
-					esc_html( _n( 'Download all %d template as a JSON file.', 'Download all %d templates as a JSON file.', $counts['total'], 'cf7-email-template-manager' ) ),
-					(int) $counts['total']
+					esc_html( _n( 'Download all %d template as a JSON file.', 'Download all %d templates as a JSON file.', $cf7etm_counts['total'], 'cf7-email-template-manager' ) ),
+					(int) $cf7etm_counts['total']
 				);
 				?>
 			</p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="cf7etm_export" />
 				<?php wp_nonce_field( 'cf7etm_export' ); ?>
-				<button type="submit" class="cf7etm-btn" <?php disabled( 0 === $counts['total'] ); ?>>
+				<button type="submit" class="cf7etm-btn" <?php disabled( 0 === $cf7etm_counts['total'] ); ?>>
 					<span class="dashicons dashicons-download" aria-hidden="true"></span>
 					<?php esc_html_e( 'Export templates', 'cf7-email-template-manager' ); ?>
 				</button>
@@ -83,21 +83,21 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 			<table class="cf7etm-table cf7etm-table--plain">
 				<tbody>
 					<?php
-					$rows = array(
+					$cf7etm_rows = array(
 						__( 'Plugin version', 'cf7-email-template-manager' )      => CF7ETM_VERSION,
 						__( 'WordPress', 'cf7-email-template-manager' )           => get_bloginfo( 'version' ),
 						__( 'Contact Form 7', 'cf7-email-template-manager' )      => defined( 'WPCF7_VERSION' ) ? WPCF7_VERSION : __( 'Not active', 'cf7-email-template-manager' ),
 						__( 'PHP', 'cf7-email-template-manager' )                 => PHP_VERSION,
-						__( 'Templates', 'cf7-email-template-manager' )           => number_format_i18n( $counts['total'] ),
+						__( 'Templates', 'cf7-email-template-manager' )           => number_format_i18n( $cf7etm_counts['total'] ),
 						__( 'Managed forms', 'cf7-email-template-manager' )       => number_format_i18n( count( CF7ETM_CF7_Bridge::assignments() ) ),
-						__( 'Debug logging', 'cf7-email-template-manager' )       => $debug_on ? __( 'On', 'cf7-email-template-manager' ) : __( 'Off', 'cf7-email-template-manager' ),
+						__( 'Debug logging', 'cf7-email-template-manager' )       => $cf7etm_debug_on ? __( 'On', 'cf7-email-template-manager' ) : __( 'Off', 'cf7-email-template-manager' ),
 					);
 
-					foreach ( $rows as $label => $value ) :
+					foreach ( $cf7etm_rows as $cf7etm_label => $cf7etm_value ) :
 						?>
 						<tr>
-							<th scope="row"><?php echo esc_html( $label ); ?></th>
-							<td><?php echo esc_html( $value ); ?></td>
+							<th scope="row"><?php echo esc_html( $cf7etm_label ); ?></th>
+							<td><?php echo esc_html( $cf7etm_value ); ?></td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>
@@ -109,7 +109,7 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 	<div class="cf7etm-card cf7etm-card--flush">
 		<div class="cf7etm-card__head">
 			<h2><?php esc_html_e( 'Debug Log', 'cf7-email-template-manager' ); ?></h2>
-			<?php if ( $log ) : ?>
+			<?php if ( $cf7etm_log ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="cf7etm_clear_log" />
 					<?php wp_nonce_field( 'cf7etm_clear_log' ); ?>
@@ -118,7 +118,7 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 			<?php endif; ?>
 		</div>
 
-		<?php if ( ! $debug_on && ! $log ) : ?>
+		<?php if ( ! $cf7etm_debug_on && ! $cf7etm_log ) : ?>
 			<div class="cf7etm-empty cf7etm-empty--inline">
 				<h2><?php esc_html_e( 'Logging is off.', 'cf7-email-template-manager' ); ?></h2>
 				<p><?php esc_html_e( 'Turn on debug logging in Settings to record which templates were applied.', 'cf7-email-template-manager' ); ?></p>
@@ -126,7 +126,7 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 					<?php esc_html_e( 'Open Settings', 'cf7-email-template-manager' ); ?>
 				</a>
 			</div>
-		<?php elseif ( ! $log ) : ?>
+		<?php elseif ( ! $cf7etm_log ) : ?>
 			<div class="cf7etm-empty cf7etm-empty--inline">
 				<h2><?php esc_html_e( 'Nothing logged yet.', 'cf7-email-template-manager' ); ?></h2>
 				<p><?php esc_html_e( 'Entries appear here after a managed form is submitted.', 'cf7-email-template-manager' ); ?></p>
@@ -140,13 +140,13 @@ $debug_on = (bool) CF7ETM_Plugin::setting( 'debug' );
 					</tr>
 				</thead>
 				<tbody>
-					<?php foreach ( array_slice( $log, 0, 50 ) as $entry ) : ?>
+					<?php foreach ( array_slice( $cf7etm_log, 0, 50 ) as $cf7etm_entry ) : ?>
 						<tr>
 							<td data-label="<?php esc_attr_e( 'When', 'cf7-email-template-manager' ); ?>" class="cf7etm-nowrap">
-								<?php echo esc_html( wp_date( 'Y-m-d H:i:s', (int) $entry['time'] ) ); ?>
+								<?php echo esc_html( wp_date( 'Y-m-d H:i:s', (int) $cf7etm_entry['time'] ) ); ?>
 							</td>
 							<td data-label="<?php esc_attr_e( 'Event', 'cf7-email-template-manager' ); ?>">
-								<?php echo esc_html( $entry['message'] ); ?>
+								<?php echo esc_html( $cf7etm_entry['message'] ); ?>
 							</td>
 						</tr>
 					<?php endforeach; ?>

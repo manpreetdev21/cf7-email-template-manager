@@ -40,20 +40,13 @@ $cf7etm_uploads = wp_upload_dir();
 $cf7etm_dir     = untrailingslashit( $cf7etm_uploads['basedir'] ) . '/cf7etm-submissions';
 
 if ( is_dir( $cf7etm_dir ) ) {
-	$cf7etm_items = new RecursiveIteratorIterator(
-		new RecursiveDirectoryIterator( $cf7etm_dir, FilesystemIterator::SKIP_DOTS ),
-		RecursiveIteratorIterator::CHILD_FIRST
-	);
+	require_once ABSPATH . 'wp-admin/includes/file.php';
 
-	foreach ( $cf7etm_items as $cf7etm_item ) {
-		if ( $cf7etm_item->isDir() ) {
-			rmdir( $cf7etm_item->getPathname() );
-		} else {
-			wp_delete_file( $cf7etm_item->getPathname() );
-		}
+	global $wp_filesystem;
+
+	if ( WP_Filesystem() && $wp_filesystem ) {
+		$wp_filesystem->delete( $cf7etm_dir, true );
 	}
-
-	rmdir( $cf7etm_dir );
 }
 
 foreach ( array( 'cf7etm_settings', 'cf7etm_branding', 'cf7etm_assignments', 'cf7etm_log', 'cf7etm_seeded', 'cf7etm_db_version' ) as $cf7etm_option ) {

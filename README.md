@@ -4,7 +4,7 @@ Reusable, brandable email templates for Contact Form 7 — design once, assign t
 
 | | |
 |---|---|
-| **Version** | 1.4.1 |
+| **Version** | 1.4.2 |
 | **Requires** | WordPress 6.4+, PHP 8.1+, Contact Form 7 5.8+ |
 | **Tested up to** | WordPress 7.1, Contact Form 7 6.2 |
 | **License** | GPL-2.0-or-later |
@@ -108,6 +108,11 @@ Almost always because the logo URL points at a host the recipient cannot reach �
 Templates, submissions and stored files all stay. They are only removed if you tick **Delete all plugin data** in Settings → Advanced first.
 
 ## Changelog
+
+### 1.4.2
+- Clean pass on the WordPress.org Plugin Check: no errors, and the variable-prefix warnings in the admin screens are gone too.
+- Uninstall now removes the upload folder through `WP_Filesystem` rather than calling `rmdir()` directly.
+- `php bin/build-zip.php` builds the distributable zip from `.distignore`, so development and hidden files are never shipped.
 
 ### 1.4.1
 - Checked against Contact Form 7 6.2. Nothing this plugin relies on has changed: the properties filter, the submission API, the mail property keys and the rule that leaves a complete HTML document unwrapped all behave as before.

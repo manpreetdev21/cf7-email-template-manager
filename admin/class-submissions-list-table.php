@@ -399,7 +399,7 @@ class CF7ETM_Submissions_List_Table extends WP_List_Table {
 			(int) $this->get_column_count()
 		);
 
-		$entry = $item;
+		$cf7etm_entry = $item;
 		require CF7ETM_DIR . 'admin/views/partial-entry-data.php';
 
 		echo '</td></tr>';

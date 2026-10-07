@@ -766,6 +766,46 @@ foreach ( array_keys( CF7ETM_CF7_Bridge::special_tags() ) as $special ) {
 }
 
 /* -------------------------------------------------------------------------
+ * Packaging — what WordPress.org checks on upload
+ * ---------------------------------------------------------------------- */
+
+$readme_path = CF7ETM_DIR . 'readme.txt';
+
+cf7etm_check( 'readme.txt exists', file_exists( $readme_path ) );
+
+$readme_text = file_exists( $readme_path ) ? file_get_contents( $readme_path ) : '';
+
+cf7etm_check(
+	'readme.txt declares a GPL licence',
+	(bool) preg_match( '/^License:\s*GPLv2 or later/mi', $readme_text )
+		&& (bool) preg_match( '#^License URI:\s*https?://(www\.)?gnu\.org/#mi', $readme_text )
+);
+
+preg_match( '/^Stable tag:\s*(\S+)/mi', $readme_text, $cf7etm_stable );
+
+cf7etm_check(
+	'Stable tag matches the plugin version',
+	( $cf7etm_stable[1] ?? '' ) === CF7ETM_VERSION,
+	( $cf7etm_stable[1] ?? 'missing' ) . ' vs ' . CF7ETM_VERSION
+);
+
+cf7etm_check(
+	'Changelog covers this version',
+	str_contains( $readme_text, '= ' . CF7ETM_VERSION . ' =' )
+);
+
+$license_text = file_exists( CF7ETM_DIR . 'LICENSE' ) ? file_get_contents( CF7ETM_DIR . 'LICENSE' ) : '';
+
+cf7etm_check( 'LICENSE file ships with the plugin', '' !== $license_text );
+
+cf7etm_check(
+	'LICENSE carries the full GPL version 2 text',
+	str_contains( $license_text, 'GNU GENERAL PUBLIC LICENSE' )
+		&& str_contains( $license_text, 'Version 2, June 1991' )
+		&& str_contains( $license_text, 'TERMS AND CONDITIONS' )
+);
+
+/* -------------------------------------------------------------------------
  * Clean up
  * ---------------------------------------------------------------------- */
 

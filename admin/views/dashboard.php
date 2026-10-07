@@ -7,15 +7,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$counts       = CF7ETM_Template_Post_Type::counts();
-$assigned_ids = CF7ETM_CF7_Bridge::assigned_template_ids();
-$forms        = CF7ETM_CF7_Bridge::forms();
-$assignments  = CF7ETM_CF7_Bridge::assignments();
+$cf7etm_counts       = CF7ETM_Template_Post_Type::counts();
+$cf7etm_assigned_ids = CF7ETM_CF7_Bridge::assigned_template_ids();
+$cf7etm_forms        = CF7ETM_CF7_Bridge::forms();
+$cf7etm_assignments  = CF7ETM_CF7_Bridge::assignments();
 
-$cards = array(
+$cf7etm_cards = array(
 	array(
 		'icon'  => 'dashicons-email-alt',
-		'count' => $counts['total'],
+		'count' => $cf7etm_counts['total'],
 		'label' => __( 'Total Templates', 'cf7-email-template-manager' ),
 		'desc'  => __( 'Every template in your library.', 'cf7-email-template-manager' ),
 		'link'  => CF7ETM_Plugin::url( 'templates' ),
@@ -23,7 +23,7 @@ $cards = array(
 	),
 	array(
 		'icon'  => 'dashicons-yes-alt',
-		'count' => $counts['publish'],
+		'count' => $cf7etm_counts['publish'],
 		'label' => __( 'Active Templates', 'cf7-email-template-manager' ),
 		'desc'  => __( 'Ready to be assigned to a form.', 'cf7-email-template-manager' ),
 		'link'  => CF7ETM_Plugin::url( 'templates', array( 'filter' => 'publish' ) ),
@@ -31,7 +31,7 @@ $cards = array(
 	),
 	array(
 		'icon'  => 'dashicons-admin-links',
-		'count' => count( $assignments ),
+		'count' => count( $cf7etm_assignments ),
 		'label' => __( 'Assigned Forms', 'cf7-email-template-manager' ),
 		'desc'  => __( 'Contact forms using a template.', 'cf7-email-template-manager' ),
 		'link'  => CF7ETM_Plugin::url( 'assignments' ),
@@ -39,7 +39,7 @@ $cards = array(
 	),
 	array(
 		'icon'  => 'dashicons-archive',
-		'count' => max( 0, $counts['total'] - count( $assigned_ids ) ),
+		'count' => max( 0, $cf7etm_counts['total'] - count( $cf7etm_assigned_ids ) ),
 		'label' => __( 'Unused Templates', 'cf7-email-template-manager' ),
 		'desc'  => __( 'Not assigned to any form yet.', 'cf7-email-template-manager' ),
 		'link'  => CF7ETM_Plugin::url( 'templates', array( 'filter' => 'unused' ) ),
@@ -47,7 +47,7 @@ $cards = array(
 	),
 	array(
 		'icon'  => 'dashicons-feedback',
-		'count' => count( $forms ),
+		'count' => count( $cf7etm_forms ),
 		'label' => __( 'Contact Forms', 'cf7-email-template-manager' ),
 		'desc'  => __( 'Forms detected in Contact Form 7.', 'cf7-email-template-manager' ),
 		'link'  => admin_url( 'admin.php?page=wpcf7' ),
@@ -94,7 +94,7 @@ $cards = array(
 	CF7ETM_Admin::flash();
 	?>
 
-	<?php if ( 0 === $counts['total'] ) : ?>
+	<?php if ( 0 === $cf7etm_counts['total'] ) : ?>
 
 		<div class="cf7etm-empty">
 			<span class="dashicons dashicons-email-alt" aria-hidden="true"></span>
@@ -108,23 +108,23 @@ $cards = array(
 	<?php else : ?>
 
 		<div class="cf7etm-grid">
-			<?php foreach ( $cards as $card ) : ?>
+			<?php foreach ( $cf7etm_cards as $cf7etm_card ) : ?>
 				<div class="cf7etm-card cf7etm-stat">
 					<div class="cf7etm-stat__top">
-						<span class="dashicons <?php echo esc_attr( $card['icon'] ); ?>" aria-hidden="true"></span>
-						<span class="cf7etm-stat__count"><?php echo esc_html( number_format_i18n( $card['count'] ) ); ?></span>
+						<span class="dashicons <?php echo esc_attr( $cf7etm_card['icon'] ); ?>" aria-hidden="true"></span>
+						<span class="cf7etm-stat__count"><?php echo esc_html( number_format_i18n( $cf7etm_card['count'] ) ); ?></span>
 					</div>
-					<h2 class="cf7etm-stat__label"><?php echo esc_html( $card['label'] ); ?></h2>
-					<p class="cf7etm-muted"><?php echo esc_html( $card['desc'] ); ?></p>
-					<a class="cf7etm-stat__link" href="<?php echo esc_url( $card['link'] ); ?>">
-						<?php echo esc_html( $card['cta'] ); ?> <span aria-hidden="true">&rarr;</span>
+					<h2 class="cf7etm-stat__label"><?php echo esc_html( $cf7etm_card['label'] ); ?></h2>
+					<p class="cf7etm-muted"><?php echo esc_html( $cf7etm_card['desc'] ); ?></p>
+					<a class="cf7etm-stat__link" href="<?php echo esc_url( $cf7etm_card['link'] ); ?>">
+						<?php echo esc_html( $cf7etm_card['cta'] ); ?> <span aria-hidden="true">&rarr;</span>
 					</a>
 				</div>
 			<?php endforeach; ?>
 		</div>
 
 		<?php
-		$recent = get_posts(
+		$cf7etm_recent = get_posts(
 			array(
 				'post_type'      => CF7ETM_Template_Post_Type::POST_TYPE,
 				'post_status'    => array( 'publish', 'draft', 'private' ),
@@ -135,7 +135,7 @@ $cards = array(
 		);
 		?>
 
-		<?php if ( $recent ) : ?>
+		<?php if ( $cf7etm_recent ) : ?>
 			<div class="cf7etm-card cf7etm-card--flush">
 				<div class="cf7etm-card__head">
 					<h2><?php esc_html_e( 'Recently updated', 'cf7-email-template-manager' ); ?></h2>
@@ -152,9 +152,9 @@ $cards = array(
 						</tr>
 					</thead>
 					<tbody>
-						<?php foreach ( $recent as $post ) : ?>
+						<?php foreach ( $cf7etm_recent as $post ) : ?>
 							<?php
-							$modifier = match ( $post->post_status ) {
+							$cf7etm_modifier = match ( $post->post_status ) {
 								'publish' => 'success',
 								'private' => 'neutral',
 								default   => 'warning',
@@ -167,20 +167,20 @@ $cards = array(
 									</a>
 								</td>
 								<td data-label="<?php esc_attr_e( 'Status', 'cf7-email-template-manager' ); ?>">
-									<span class="cf7etm-badge cf7etm-badge--<?php echo esc_attr( $modifier ); ?>">
+									<span class="cf7etm-badge cf7etm-badge--<?php echo esc_attr( $cf7etm_modifier ); ?>">
 										<?php echo esc_html( CF7ETM_Template_Post_Type::status_label( $post->post_status ) ); ?>
 									</span>
 								</td>
 								<td data-label="<?php esc_attr_e( 'Updated', 'cf7-email-template-manager' ); ?>">
 									<?php
-									$timestamp = get_post_timestamp( $post, 'modified' );
+									$cf7etm_timestamp = get_post_timestamp( $post, 'modified' );
 
 									echo esc_html(
-										$timestamp
+										$cf7etm_timestamp
 											? sprintf(
 												/* translators: %s: human-readable time difference */
 												__( '%s ago', 'cf7-email-template-manager' ),
-												human_time_diff( $timestamp )
+												human_time_diff( $cf7etm_timestamp )
 											)
 											: '—'
 									);
@@ -195,7 +195,7 @@ $cards = array(
 
 	<?php endif; ?>
 
-	<?php if ( ! $forms ) : ?>
+	<?php if ( ! $cf7etm_forms ) : ?>
 		<div class="cf7etm-alert cf7etm-alert--warning">
 			<?php
 			printf(

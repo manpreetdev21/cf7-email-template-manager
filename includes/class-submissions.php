@@ -456,7 +456,7 @@ class CF7ETM_Submissions {
 		$offset   = max( 0, (int) $args['page'] - 1 ) * $per_page;
 		$table    = self::table();
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery -- table name and ordering come from whitelists above.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery -- table name and ordering come from whitelists above.
 		$count_sql = "SELECT COUNT(*) FROM $table WHERE $clause";
 		$list_sql  = "SELECT * FROM $table WHERE $clause ORDER BY $orderby $order LIMIT %d OFFSET %d";
 
@@ -467,7 +467,7 @@ class CF7ETM_Submissions {
 		$rows = $wpdb->get_results(
 			$wpdb->prepare( $list_sql, array_merge( $params, array( $per_page, $offset ) ) )
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
 
 		return array(
 			'items' => array_map( array( __CLASS__, 'shape' ), (array) $rows ),

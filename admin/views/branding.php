@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$branding = CF7ETM_Branding::get();
+$cf7etm_branding = CF7ETM_Branding::get();
 ?>
 <div class="wrap cf7etm cf7etm-branding">
 
@@ -32,7 +32,7 @@ $branding = CF7ETM_Branding::get();
 				<p class="cf7etm-field">
 					<label for="cf7etm-company-name"><?php esc_html_e( 'Company Name', 'cf7-email-template-manager' ); ?></label>
 					<input type="text" id="cf7etm-company-name" name="branding[company_name]"
-						value="<?php echo esc_attr( $branding['company_name'] ); ?>" />
+						value="<?php echo esc_attr( $cf7etm_branding['company_name'] ); ?>" />
 					<span class="cf7etm-help"><code>[cf7etm_company_name]</code></span>
 				</p>
 
@@ -40,7 +40,7 @@ $branding = CF7ETM_Branding::get();
 					<label for="cf7etm-logo"><?php esc_html_e( 'Logo', 'cf7-email-template-manager' ); ?></label>
 					<div class="cf7etm-media">
 						<input type="url" id="cf7etm-logo" name="branding[logo]" data-media-field
-							value="<?php echo esc_attr( $branding['logo'] ); ?>" />
+							value="<?php echo esc_attr( $cf7etm_branding['logo'] ); ?>" />
 						<button type="button" class="cf7etm-btn cf7etm-btn--small" data-media-choose>
 							<?php esc_html_e( 'Choose image', 'cf7-email-template-manager' ); ?>
 						</button>
@@ -49,19 +49,19 @@ $branding = CF7ETM_Branding::get();
 						<?php esc_html_e( 'Use a hosted image; email clients cannot read local files.', 'cf7-email-template-manager' ); ?>
 						<code>[cf7etm_logo]</code>
 					</span>
-					<?php if ( $branding['logo'] && CF7ETM_Branding::is_private_host( $branding['logo'] ) ) : ?>
+					<?php if ( $cf7etm_branding['logo'] && CF7ETM_Branding::is_private_host( $cf7etm_branding['logo'] ) ) : ?>
 						<span class="cf7etm-alert cf7etm-alert--warning">
 							<?php
 							printf(
 								/* translators: %s: host name of the logo URL */
 								esc_html__( 'This logo is served from %s, which only exists on this machine. It shows in the preview here, but stays blank in the email your visitors receive. Upload the logo on the live site, or point this field at a publicly reachable URL.', 'cf7-email-template-manager' ),
-								esc_html( (string) wp_parse_url( $branding['logo'], PHP_URL_HOST ) )
+								esc_html( (string) wp_parse_url( $cf7etm_branding['logo'], PHP_URL_HOST ) )
 							);
 							?>
 						</span>
 					<?php endif; ?>
-					<?php if ( $branding['logo'] ) : ?>
-						<img class="cf7etm-media__preview" src="<?php echo esc_url( $branding['logo'] ); ?>" alt="" data-media-preview />
+					<?php if ( $cf7etm_branding['logo'] ) : ?>
+						<img class="cf7etm-media__preview" src="<?php echo esc_url( $cf7etm_branding['logo'] ); ?>" alt="" data-media-preview />
 					<?php else : ?>
 						<img class="cf7etm-media__preview" src="" alt="" data-media-preview hidden />
 					<?php endif; ?>
@@ -70,13 +70,13 @@ $branding = CF7ETM_Branding::get();
 				<p class="cf7etm-field">
 					<label for="cf7etm-website"><?php esc_html_e( 'Website URL', 'cf7-email-template-manager' ); ?></label>
 					<input type="url" id="cf7etm-website" name="branding[website]"
-						value="<?php echo esc_attr( $branding['website'] ); ?>" />
+						value="<?php echo esc_attr( $cf7etm_branding['website'] ); ?>" />
 					<span class="cf7etm-help"><code>[cf7etm_website]</code></span>
 				</p>
 
 				<p class="cf7etm-field">
 					<label for="cf7etm-address"><?php esc_html_e( 'Company Address', 'cf7-email-template-manager' ); ?></label>
-					<textarea id="cf7etm-address" name="branding[address]" rows="3"><?php echo esc_textarea( $branding['address'] ); ?></textarea>
+					<textarea id="cf7etm-address" name="branding[address]" rows="3"><?php echo esc_textarea( $cf7etm_branding['address'] ); ?></textarea>
 					<span class="cf7etm-help"><code>[cf7etm_address]</code></span>
 				</p>
 			</div>
@@ -85,29 +85,29 @@ $branding = CF7ETM_Branding::get();
 				<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Appearance', 'cf7-email-template-manager' ); ?></h2></div>
 
 				<?php
-				$colors = array(
+				$cf7etm_colors = array(
 					'primary_color'   => __( 'Primary Colour', 'cf7-email-template-manager' ),
 					'secondary_color' => __( 'Secondary Colour', 'cf7-email-template-manager' ),
 				);
 
-				foreach ( $colors as $key => $label ) :
-					$id = 'cf7etm-' . str_replace( '_', '-', $key );
+				foreach ( $cf7etm_colors as $cf7etm_key => $cf7etm_label ) :
+					$id = 'cf7etm-' . str_replace( '_', '-', $cf7etm_key );
 					?>
 					<p class="cf7etm-field">
-						<label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label>
+						<label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $cf7etm_label ); ?></label>
 						<span class="cf7etm-color">
-							<input type="color" id="<?php echo esc_attr( $id ); ?>" name="branding[<?php echo esc_attr( $key ); ?>]"
-								value="<?php echo esc_attr( $branding[ $key ] ); ?>" data-color-input />
-							<input type="text" class="cf7etm-color__hex" aria-label="<?php echo esc_attr( $label ); ?>"
-								value="<?php echo esc_attr( $branding[ $key ] ); ?>" maxlength="7" data-color-hex />
+							<input type="color" id="<?php echo esc_attr( $id ); ?>" name="branding[<?php echo esc_attr( $cf7etm_key ); ?>]"
+								value="<?php echo esc_attr( $cf7etm_branding[ $cf7etm_key ] ); ?>" data-color-input />
+							<input type="text" class="cf7etm-color__hex" aria-label="<?php echo esc_attr( $cf7etm_label ); ?>"
+								value="<?php echo esc_attr( $cf7etm_branding[ $cf7etm_key ] ); ?>" maxlength="7" data-color-hex />
 						</span>
-						<span class="cf7etm-help"><code>[cf7etm_<?php echo esc_attr( $key ); ?>]</code></span>
+						<span class="cf7etm-help"><code>[cf7etm_<?php echo esc_attr( $cf7etm_key ); ?>]</code></span>
 					</p>
 				<?php endforeach; ?>
 
 				<p class="cf7etm-field">
 					<label for="cf7etm-footer-text"><?php esc_html_e( 'Footer Text', 'cf7-email-template-manager' ); ?></label>
-					<textarea id="cf7etm-footer-text" name="branding[footer_text]" rows="3"><?php echo esc_textarea( $branding['footer_text'] ); ?></textarea>
+					<textarea id="cf7etm-footer-text" name="branding[footer_text]" rows="3"><?php echo esc_textarea( $cf7etm_branding['footer_text'] ); ?></textarea>
 					<span class="cf7etm-help"><code>[cf7etm_footer_text]</code></span>
 				</p>
 			</div>
@@ -116,19 +116,19 @@ $branding = CF7ETM_Branding::get();
 				<div class="cf7etm-card__head"><h2><?php esc_html_e( 'Social Links', 'cf7-email-template-manager' ); ?></h2></div>
 
 				<?php
-				$socials = array(
+				$cf7etm_socials = array(
 					'social_facebook'  => __( 'Facebook', 'cf7-email-template-manager' ),
 					'social_twitter'   => __( 'X', 'cf7-email-template-manager' ),
 					'social_linkedin'  => __( 'LinkedIn', 'cf7-email-template-manager' ),
 					'social_instagram' => __( 'Instagram', 'cf7-email-template-manager' ),
 				);
 
-				foreach ( $socials as $key => $label ) :
+				foreach ( $cf7etm_socials as $cf7etm_key => $cf7etm_label ) :
 					?>
 					<p class="cf7etm-field">
-						<label for="cf7etm-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label>
-						<input type="url" id="cf7etm-<?php echo esc_attr( $key ); ?>" name="branding[<?php echo esc_attr( $key ); ?>]"
-							value="<?php echo esc_attr( $branding[ $key ] ); ?>" placeholder="https://" />
+						<label for="cf7etm-<?php echo esc_attr( $cf7etm_key ); ?>"><?php echo esc_html( $cf7etm_label ); ?></label>
+						<input type="url" id="cf7etm-<?php echo esc_attr( $cf7etm_key ); ?>" name="branding[<?php echo esc_attr( $cf7etm_key ); ?>]"
+							value="<?php echo esc_attr( $cf7etm_branding[ $cf7etm_key ] ); ?>" placeholder="https://" />
 					</p>
 				<?php endforeach; ?>
 
